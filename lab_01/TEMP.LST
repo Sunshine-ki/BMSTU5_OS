@@ -1,0 +1,920 @@
+            Temp.lst				Sourcer	v5.10   14-Sep-20  10:02 am   Page 1
+; Вызывает подпрограмму sub_1
+020A:0746  E8 0070		;*		call	sub_1			; (07B9)
+020A:0746  E8 70 00				db	0E8h, 70h, 00h
+; Записывает регистры в стек.
+020A:0749  06					push	es
+020A:074A  1E					push	ds
+020A:074B  50					push	ax
+020A:074C  52					push	dx
+; Инициализирует регистры.
+020A:074D  B8 0040				mov	ax,40h
+020A:0750  8E D8				mov	ds,ax
+020A:0752  33 C0				xor	ax,ax			; Zero register
+020A:0754  8E C0				mov	es,ax
+; 0040:006C = 0046С - адрес 4-байтовой переменной, располагающейся в области данных BIOS - это счетчик таймера.
+; Увеличивает счетчик таймера.
+020A:0756  FF 06 006C				inc	word ptr ds:[6Ch]	; (0040:006C=0A1Dh)
+; JNE/JNZ - перейти, если не равно (ZF = 0) на loc_1 
+020A:075A  75 04				jnz	loc_1			; Jump if not zero
+; Увеличиваем 0040:006E (Видимо, если час прошел, мы увеличиваем 0040:006E на единицу, т.е. 0040:006E - это часы)
+020A:075C  FF 06 006E				inc	word ptr ds:[6Eh]	; (0040:006E=0Ah)
+020A:0760			loc_1:
+; Сравниваем 0040:006E с 24 (это часы 18h == 24)
+020A:0760  83 3E 006E 18			cmp	word ptr ds:[6Eh],18h	; (0040:006E=0Ah)
+; Если еще не 24, то прыгаем на loc_2
+020A:0765  75 15				jne	loc_2			; Jump if not equal
+; Сравниваем 0040:006C (0B0h=176)
+020A:0767  81 3E 006C 00B0			cmp	word ptr ds:[6Ch],0B0h	; (0040:006C=0A1Dh)
+020A:076D  75 0D				jne	loc_2			; Jump if not equal
+020A:076F  A3 006E				mov	word ptr ds:[6Eh],ax	; (0040:006E=0Ah)
+020A:0772  A3 006C				mov	word ptr ds:[6Ch],ax	; (0040:006C=0A1Dh)
+020A:0775  C6 06 0070 01			mov	byte ptr ds:[70h],1	; (0040:0070=0)
+020A:077A  0C 08				or	al,8
+020A:077C			loc_2:
+020A:077C  50					push	ax
+020A:077D  FE 0E 0040				dec	byte ptr ds:[40h]	; (0040:0040=2Ch)
+020A:0781  75 0B				jnz	loc_3			; Jump if not zero
+020A:0783  80 26 003F F0			and	byte ptr ds:[3Fh],0F0h	; (0040:003F=0)
+020A:0788  B0 0C				mov	al,0Ch
+020A:078A  BA 03F2				mov	dx,3F2h
+020A:078D  EE					out	dx,al			; port 3F2h, dsk0 contrl output
+020A:078E			loc_3:
+020A:078E  58					pop	ax
+020A:078F  F7 06 0314 0004			test	word ptr ds:[314h],4	; (0040:0314=3200h)
+020A:0795  75 0C				jnz	loc_4			; Jump if not zero
+020A:0797  9F					lahf				; Load ah from flags
+020A:0798  86 E0				xchg	ah,al
+020A:079A  50					push	ax
+020A:079B  26: FF 1E 0070			call	dword ptr es:[70h]	; (0000:0070=6ADh)
+020A:07A0  EB 03				jmp	short loc_5		; (07A5)
+020A:07A2  90					nop
+020A:07A3			loc_4:
+020A:07A3  CD 1C				int	1Ch			; Timer break (call each 18.2ms)
+020A:07A5			loc_5:
+020A:07A5  E8 0011				call	sub_1			; (07B9)
+020A:07A8  B0 20				mov	al,20h			; ' '
+020A:07AA  E6 20				out	20h,al			; port 20h, 8259-1 int command
+										;  al = 20h, end of interrupt
+020A:07AC  5A					pop	dx
+020A:07AD  58					pop	ax
+020A:07AE  1F					pop	ds
+020A:07AF  07					pop	es
+020A:07B0  E9 FE99				jmp	$-164h
+020A:07B3  C4					db	0C4h
+							                        ;* No entry point to code
+020A:07B4  C4 0E 93E9				les	cx,dword ptr ds:[93E9h]	; (0000:93E9=0A1A1h) Load 32 bit ptr
+020A:07B8  FE					db	0FEh
+
+           Temp.lst				Sourcer	v5.10   14-Sep-20  10:02 am   Page 2
+
+				;��������������������������������������������������������������������������
+				;                              SUBROUTINE
+				;��������������������������������������������������������������������������
+
+				sub_1		proc	near
+020A:07B9  1E					push	ds
+020A:07BA  50					push	ax
+020A:07BB  B8 0040				mov	ax,40h
+020A:07BE  8E D8				mov	ds,ax
+020A:07C0  9F					lahf				; Load ah from flags
+020A:07C1  F7 06 0314 2400			test	word ptr ds:[314h],2400h	; (0040:0314=3200h)
+020A:07C7  75 0C				jnz	loc_7			; Jump if not zero
+020A:07C9  F0> 81 26 0314 FDFF	                           lock	and	word ptr ds:[314h],0FDFFh	; (0040:0314=3200h)
+020A:07D0			loc_6:
+020A:07D0  9E					sahf				; Store ah into flags
+020A:07D1  58					pop	ax
+020A:07D2  1F					pop	ds
+020A:07D3  EB 03				jmp	short loc_8		; (07D8)
+020A:07D5			loc_7:
+020A:07D5  FA					cli				; Disable interrupts
+020A:07D6  EB F8				jmp	short loc_6		; (07D0)
+020A:07D8			loc_8:
+020A:07D8  C3					retn
+				sub_1		endp
+
+
+				;��������������������������������������������������������������������������
+				;                              SUBROUTINE
+				;��������������������������������������������������������������������������
+
+				sub_2		proc	near
+020A:07D9  1E					push	ds
+020A:07DA  50					push	ax
+020A:07DB  B8 0040				mov	ax,40h
+020A:07DE  8E D8				mov	ds,ax
+020A:07E0  9F					lahf				; Load ah from flags
+020A:07E1  F7 06 0314 0003			test	word ptr ds:[314h],3	; (0040:0314=3200h)
+020A:07E7  75 14				jnz	loc_10			; Jump if not zero
+020A:07E9  F7 06 0314 2400			test	word ptr ds:[314h],2400h	; (0040:0314=3200h)
+020A:07EF  75 0C				jnz	loc_10			; Jump if not zero
+020A:07F1  F0> 81 0E 0314 0200	                           lock	or	word ptr ds:[314h],200h	; (0040:0314=3200h)
+020A:07F8			loc_9:
+020A:07F8  9E					sahf				; Store ah into flags
+020A:07F9  58					pop	ax
+020A:07FA  1F					pop	ds
+020A:07FB  EB 03				jmp	short loc_11		; (0800)
+020A:07FD			loc_10:
+020A:07FD  FB					sti				; Enable interrupts
+020A:07FE  EB F8				jmp	short loc_9		; (07F8)
+020A:0800			loc_11:
+020A:0800  C3					retn
+				sub_2		endp
+
+020A:0801  00					db	0
+020A:0802  0000			data_23		dw	0
+020A:0804  0000			data_24		dw	0
+
+           Temp.lst				Sourcer	v5.10   14-Sep-20  10:02 am   Page 3
+
+				;��������������������������������������������������������������������������
+				;                              SUBROUTINE
+				;��������������������������������������������������������������������������
+
+				sub_3		proc	near
+020A:0806  2E: FF 06 0804			inc	cs:data_24		; (020A:0804=0)
+020A:080B  3D 13FF				cmp	ax,13FFh
+020A:080E  75 5B				jne	loc_14			; Jump if not equal
+020A:0810  83 F9 01				cmp	cx,1
+020A:0813  74 40				je	loc_12			; Jump if equal
+020A:0815  56					push	si
+020A:0816  BE 00A4				mov	si,0A4h
+020A:0819  2E: 2B 36 0802			sub	si,cs:data_23		; (020A:0802=0)
+020A:081E  3B CE				cmp	cx,si
+020A:0820  73 3E				jae	loc_13			; Jump if above or =
+020A:0822  57					push	di
+020A:0823  51					push	cx
+020A:0824  52					push	dx
+020A:0825  1E					push	ds
+020A:0826  06					push	es
+020A:0827  8C C2				mov	dx,es
+020A:0829  8E DA				mov	ds,dx
+020A:082B  BA B000				mov	dx,0B000h
+020A:082E  8E C2				mov	es,dx
+020A:0830  8B D1				mov	dx,cx
+020A:0832  8B F7				mov	si,di
+020A:0834  2E: 8B 3E 0802			mov	di,cs:data_23		; (020A:0802=0)
+020A:0839  FC					cld				; Clear direction
+020A:083A  D1 E9				shr	cx,1			; Shift w/zeros fill
+020A:083C  F3/ A5				rep	movsw			; Rep when cx >0 Mov [si] to es:[di]
+020A:083E  80 D1 00				adc	cl,0
+020A:0841  F3/ A4				rep	movsb			; Rep when cx >0 Mov [si] to es:[di]
+020A:0843  2E: 01 16 0802			add	cs:data_23,dx		; (020A:0802=0)
+020A:0848  07					pop	es
+020A:0849  1F					pop	ds
+020A:084A  5A					pop	dx
+020A:084B  59					pop	cx
+020A:084C  5F					pop	di
+020A:084D  5E					pop	si
+020A:084E  F9					stc				; Set carry flag
+020A:084F  2E: FF 0E 0804			dec	cs:data_24		; (020A:0804=0)
+020A:0854  C3					retn
+020A:0855			loc_12:
+020A:0855  50					push	ax
+020A:0856  B4 0E				mov	ah,0Eh
+020A:0858  26: 8A 05				mov	al,es:[di]
+020A:085B  E8 0012				call	sub_4			; (0870)
+020A:085E  58					pop	ax
+020A:085F  C3					retn
+020A:0860			loc_13:
+020A:0860  5E					pop	si
+020A:0861  2E: FF 0E 0804			dec	cs:data_24		; (020A:0804=0)
+020A:0866  C4					db	0C4h
+020A:0867  C4 42 F9				les	ax,dword ptr [bp+si-7]	; Load 32 bit ptr
+020A:086A  C3					retn
+020A:086B			loc_14:
+020A:086B  80 FC 0E				cmp	ah,0Eh
+           Temp.lst				Sourcer	v5.10   14-Sep-20  10:02 am   Page 4
+
+020A:086E  75 28				jne	loc_15			; Jump if not equal
+
+				;���� External Entry into Subroutine ��������������������������������������
+
+				sub_4:
+020A:0870  56					push	si
+020A:0871  2E: 8B 36 0802			mov	si,cs:data_23		; (020A:0802=0)
+020A:0876  81 FE 00A4				cmp	si,0A4h
+020A:087A  73 E4				jae	loc_13			; Jump if above or =
+020A:087C  1E					push	ds
+020A:087D  BE B000				mov	si,0B000h
+020A:0880  8E DE				mov	ds,si
+020A:0882  2E: 8B 36 0802			mov	si,cs:data_23		; (020A:0802=0)
+020A:0887  88 04				mov	[si],al
+020A:0889  46					inc	si
+020A:088A  2E: 89 36 0802			mov	cs:data_23,si		; (020A:0802=0)
+020A:088F  1F					pop	ds
+020A:0890  5E					pop	si
+020A:0891  F9					stc				; Set carry flag
+020A:0892  2E: FF 0E 0804			dec	cs:data_24		; (020A:0804=0)
+020A:0897  C3					retn
+020A:0898			loc_15:
+020A:0898  50					push	ax
+020A:0899  B8 13FE				mov	ax,13FEh
+020A:089C  C4					db	0C4h
+020A:089D  C4 42 58				les	ax,dword ptr [bp+si+58h]	; Load 32 bit ptr
+020A:08A0  F8					clc				; Clear carry flag
+020A:08A1  2E: FF 0E 0804			dec	cs:data_24		; (020A:0804=0)
+020A:08A6  C3					retn
+				sub_3		endp
+
+020A:08A7  00			data_25		db	0
+020A:08A8  00			data_26		db	0
+020A:08A9  2E: 80 3E 08A7 02			cmp	cs:data_25,2		; (020A:08A7=0)
+020A:08AF  75 05				jne	loc_16			; Jump if not equal
+020A:08B1  E8 FF52				call	sub_3			; (0806)
+020A:08B4  72 5F				jc	loc_22			; Jump if carry Set
+020A:08B6			loc_16:
+020A:08B6  2E: 80 3E 08A7 01			cmp	cs:data_25,1		; (020A:08A7=0)
+020A:08BC  74 5D				je	loc_24			; Jump if equal
+020A:08BE  80 FC 00				cmp	ah,0
+020A:08C1  74 30				je	loc_20			; Jump if equal
+020A:08C3  80 FC 1C				cmp	ah,1Ch
+020A:08C6  77 0B				ja	loc_17			; Jump if above
+020A:08C8  80 FC 04				cmp	ah,4
+020A:08CB  74 20				je	loc_19			; Jump if equal
+020A:08CD  C4					db	0C4h
+020A:08CE  C4 42 EB				les	ax,dword ptr [bp+si-15h]	; Load 32 bit ptr
+020A:08D1  43					inc	bx
+020A:08D2  90					nop
+020A:08D3			loc_17:
+020A:08D3  80 FC 4F				cmp	ah,4Fh			; 'O'
+020A:08D6  75 06				jne	loc_18			; Jump if not equal
+020A:08D8  C4					db	0C4h
+020A:08D9  C4 BE 73EB				les	di,dword ptr [bp+73EBh]	; Load 32 bit ptr
+020A:08DD  90					nop
+020A:08DE			loc_18:
+           Temp.lst				Sourcer	v5.10   14-Sep-20  10:02 am   Page 5
+
+020A:08DE  80 FC F0				cmp	ah,0F0h
+020A:08E1  72 35				jb	loc_23			; Jump if below
+020A:08E3  80 FC F7				cmp	ah,0F7h
+020A:08E6  76 05				jbe	loc_19			; Jump if below or =
+020A:08E8  80 FC FA				cmp	ah,0FAh
+020A:08EB  75 2B				jne	loc_23			; Jump if not equal
+020A:08ED			loc_19:
+020A:08ED  C4					db	0C4h
+020A:08EE  C4 BE 23EB				les	di,dword ptr [bp+23EBh]	; Load 32 bit ptr
+020A:08F2  90					nop
+020A:08F3			loc_20:
+020A:08F3  2E: C6 06 08A8 01			mov	cs:data_26,1		; (020A:08A8=0)
+020A:08F9  C4					db	0C4h
+020A:08FA  C4 BE 9090				les	di,dword ptr [bp-6F70h]	; Load 32 bit ptr
+020A:08FE  50					push	ax
+020A:08FF  25 007F				and	ax,7Fh
+020A:0902  3C 03				cmp	al,3
+020A:0904  76 08				jbe	loc_21			; Jump if below or =
+020A:0906  3C 07				cmp	al,7
+020A:0908  74 04				je	loc_21			; Jump if equal
+020A:090A  58					pop	ax
+020A:090B  EB 0E				jmp	short loc_24		; (091B)
+020A:090D  90					nop
+020A:090E			loc_21:
+020A:090E  58					pop	ax
+020A:090F  2E: C6 06 08A8 00			mov	cs:data_26,0		; (020A:08A8=0)
+020A:0915			loc_22:
+020A:0915  E9 FD34				jmp	$-2C9h
+020A:0918			loc_23:
+020A:0918  F9					stc				; Set carry flag
+020A:0919  EB FA				jmp	short loc_22		; (0915)
+020A:091B			loc_24:
+020A:091B  2E: C6 06 08A8 00			mov	cs:data_26,0		; (020A:08A8=0)
+020A:0921  3D 13FF				cmp	ax,13FFh
+020A:0924  74 2F				je	loc_28			; Jump if equal
+020A:0926  80 FC F0				cmp	ah,0F0h
+020A:0929  72 0D				jb	loc_25			; Jump if below
+020A:092B  80 FC F7				cmp	ah,0F7h
+020A:092E  76 BD				jbe	loc_19			; Jump if below or =
+020A:0930  80 FC FA				cmp	ah,0FAh
+020A:0933  74 B8				je	loc_19			; Jump if equal
+020A:0935  EB 19				jmp	short loc_27		; (0950)
+020A:0937  90					nop
+020A:0938			loc_25:
+020A:0938  80 FC 04				cmp	ah,4
+020A:093B  74 B0				je	loc_19			; Jump if equal
+020A:093D  80 FC 00				cmp	ah,0
+020A:0940  75 06				jne	loc_26			; Jump if not equal
+020A:0942  C4					db	0C4h
+020A:0943  C4 BE 09EB				les	di,dword ptr [bp+9EBh]	; Load 32 bit ptr
+020A:0947  90					nop
+020A:0948			loc_26:
+020A:0948  80 FC 11				cmp	ah,11h
+020A:094B  75 03				jne	loc_27			; Jump if not equal
+020A:094D  C4					db	0C4h
+020A:094E  C4 BE 22EA				les	di,dword ptr [bp+22EAh]	; Load 32 bit ptr
+020A:0952  00 00				add	[bx+si],al
+           Temp.lst				Sourcer	v5.10   14-Sep-20  10:02 am   Page 6
+
+020A:0954  C0					db	0C0h
+020A:0955			loc_28:
+020A:0955  56					push	si
+020A:0956  57					push	di
+020A:0957  55					push	bp
+
+020A:0958			locloop_29:
+020A:0958  BA 0046				mov	dx,46h
+020A:095B  52					push	dx
+020A:095C  0E					push	cs
+020A:095D  BB 096C				mov	bx,96Ch
+020A:0960  53					push	bx
+020A:0961  BB 0007				mov	bx,7
+020A:0964  B4 0E				mov	ah,0Eh
+020A:0966  26: 8A 05				mov	al,es:[di]
+020A:0969  47					inc	di
+020A:096A  EB E4		;*		jmp	short loc_27		;*(0950)
+020A:096A  EB E4				db	0EBh,0E4h
+							                        ;* No entry point to code
+020A:096C  E2 EA				loop	locloop_29		; Loop if cx > 0
+
+020A:096E  5D					pop	bp
+020A:096F  5F					pop	di
+020A:0970  5E					pop	si
+020A:0971  B8 0001				mov	ax,1
+020A:0974			loc_30:
+020A:0974  EB 9F				jmp	short loc_22		; (0915)
+							                        ;* No entry point to code
+020A:0976  2E: 80 3E 08A7 02			cmp	cs:data_25,2		; (020A:08A7=0)
+020A:097C  75 05				jne	loc_31			; Jump if not equal
+020A:097E  E8 FE85				call	sub_3			; (0806)
+020A:0981  72 F1				jc	loc_30			; Jump if carry Set
+020A:0983			loc_31:
+020A:0983  2E: 80 3E 08A7 01			cmp	cs:data_25,1		; (020A:08A7=0)
+020A:0989  74 06				je	loc_32			; Jump if equal
+020A:098B  C4					db	0C4h
+020A:098C  C4 10				les	dx,dword ptr [bx+si]	; Load 32 bit ptr
+020A:098E  E9 FCBB				jmp	$-342h
+020A:0991			loc_32:
+020A:0991  80 FC 13				cmp	ah,13h
+020A:0994  75 04				jne	loc_33			; Jump if not equal
+020A:0996  3C FF				cmp	al,0FFh
+020A:0998  74 BB				je	loc_28			; Jump if equal
+020A:099A			loc_33:
+020A:099A  EA F000:FF53		;*		jmp	far ptr loc_76		;*(F000:FF53)
+020A:099A  EA					db	0EAh
+020A:099B  FF53 F000				dw	0FF53h, 0F000h
+020A:099F  CD 10				int	10h			; Video display   ah=functn 00h
+										;  set display mode in al
+020A:09A1  C4					db	0C4h
+020A:09A2  C4					db	0C4h
+020A:09A3  FE C4				inc	ah
+020A:09A5  C4 11				les	dx,dword ptr [bx+di]	; Load 32 bit ptr
+020A:09A7  E9 FCA2				jmp	$-35Bh
+020A:09AA  C4					db	0C4h
+							                        ;* No entry point to code
+020A:09AB  C4 12				les	dx,dword ptr [bp+si]	; Load 32 bit ptr
+           Temp.lst				Sourcer	v5.10   14-Sep-20  10:02 am   Page 7
+
+020A:09AD  E9 FC9C				jmp	$-361h
+020A:09B0  C4					db	0C4h
+							                        ;* No entry point to code
+020A:09B1  C4 14				les	dx,dword ptr [si]	; Load 32 bit ptr
+020A:09B3  E9 FC96				jmp	$-367h
+020A:09B6  87 DB				xchg	bx,bx
+020A:09B8  0000			data_27		dw	0
+020A:09BA  00 00				add	[bx+si],al
+020A:09BC  025E			data_28		dw	25Eh
+020A:09BE  00 00				add	[bx+si],al
+020A:09C0  0032			data_29		dw	32h
+020A:09C2  00 00				add	[bx+si],al
+020A:09C4  1E					push	ds
+020A:09C5  53					push	bx
+020A:09C6  BB 0040				mov	bx,40h
+020A:09C9  8E DB				mov	ds,bx
+020A:09CB  80 FC 10				cmp	ah,10h
+020A:09CE  E8 FDE8				call	sub_1			; (07B9)
+020A:09D1  72 03				jc	loc_34			; Jump if carry Set
+020A:09D3  E9 00E0				jmp	loc_48			; (0AB6)
+020A:09D6			loc_34:
+020A:09D6  0A E4				or	ah,ah			; Zero ?
+020A:09D8  74 3E				jz	loc_39			; Jump if zero
+020A:09DA  FE CC				dec	ah
+020A:09DC  74 74				jz	loc_43			; Jump if zero
+020A:09DE  FE CC				dec	ah
+020A:09E0  74 11				jz	loc_36			; Jump if zero
+020A:09E2  FE CC				dec	ah
+020A:09E4  74 08				jz	loc_35			; Jump if zero
+020A:09E6  FE CC				dec	ah
+020A:09E8  74 04				jz	loc_35			; Jump if zero
+020A:09EA  FE CC				dec	ah
+020A:09EC  74 0A				jz	loc_37			; Jump if zero
+020A:09EE			loc_35:
+020A:09EE  5B					pop	bx
+020A:09EF  1F					pop	ds
+020A:09F0  E9 FC59				jmp	$-3A4h
+020A:09F3			loc_36:
+020A:09F3  A0 0017				mov	al,byte ptr data_1+1	; (020A:0017=0)
+020A:09F6  EB F6				jmp	short loc_35		; (09EE)
+020A:09F8			loc_37:
+020A:09F8  56					push	si
+020A:09F9  8B 1E 001C				mov	bx,word ptr ds:[1Ch]	; (020A:001C=148Fh)
+020A:09FD  8B F3				mov	si,bx
+020A:09FF  E8 01B9				call	sub_9			; (0BBB)
+020A:0A02  3B 1E 001A				cmp	bx,word ptr ds:[1Ah]	; (020A:001A=0AE9Ch)
+020A:0A06  74 0B				je	loc_38			; Jump if equal
+020A:0A08  89 0C				mov	[si],cx
+020A:0A0A  89 1E 001C				mov	word ptr ds:[1Ch],bx	; (020A:001C=148Fh)
+020A:0A0E  B0 00				mov	al,0
+020A:0A10  5E					pop	si
+020A:0A11  EB DB				jmp	short loc_35		; (09EE)
+020A:0A13			loc_38:
+020A:0A13  B0 01				mov	al,1
+020A:0A15  5E					pop	si
+020A:0A16  EB D6				jmp	short loc_35		; (09EE)
+020A:0A18			loc_39:
+           Temp.lst				Sourcer	v5.10   14-Sep-20  10:02 am   Page 8
+
+020A:0A18  8B 1E 001A				mov	bx,word ptr ds:[1Ah]	; (020A:001A=0AE9Ch)
+020A:0A1C  3B 1E 001C				cmp	bx,word ptr ds:[1Ch]	; (020A:001C=148Fh)
+020A:0A20  75 13				jne	loc_41			; Jump if not equal
+020A:0A22  E8 FDB4				call	sub_2			; (07D9)
+020A:0A25  B8 9002				mov	ax,9002h
+020A:0A28  CD 15				int	15h			; General services, ah=func 90h
+										;  device busy, al=type,
+										;   es:bx=ptr of request block
+020A:0A2A			loc_40:
+020A:0A2A  E8 FD8C				call	sub_1			; (07B9)
+020A:0A2D  8B 1E 001A				mov	bx,word ptr ds:[1Ah]	; (020A:001A=0AE9Ch)
+020A:0A31  3B 1E 001C				cmp	bx,word ptr ds:[1Ch]	; (020A:001C=148Fh)
+020A:0A35			loc_41:
+020A:0A35  E8 0190				call	sub_10			; (0BC8)
+020A:0A38  75 05				jnz	loc_42			; Jump if not zero
+020A:0A3A  E8 00E3				call	sub_5			; (0B20)
+020A:0A3D  EB EB				jmp	short loc_40		; (0A2A)
+020A:0A3F			loc_42:
+020A:0A3F  8B 07				mov	ax,[bx]
+020A:0A41  E8 0177				call	sub_9			; (0BBB)
+020A:0A44  89 1E 001A				mov	word ptr ds:[1Ah],bx	; (020A:001A=0AE9Ch)
+020A:0A48  E8 0129				call	sub_8			; (0B74)
+020A:0A4B  72 DD				jc	loc_40			; Jump if carry Set
+020A:0A4D  E8 00FC				call	sub_6			; (0B4C)
+020A:0A50  EB 9C				jmp	short loc_35		; (09EE)
+020A:0A52			loc_43:
+020A:0A52  8B 1E 001A				mov	bx,word ptr ds:[1Ah]	; (020A:001A=0AE9Ch)
+020A:0A56  3B 1E 001C				cmp	bx,word ptr ds:[1Ch]	; (020A:001C=148Fh)
+020A:0A5A  8B 07				mov	ax,[bx]
+020A:0A5C  E8 0169				call	sub_10			; (0BC8)
+020A:0A5F  74 2F				jz	loc_45			; Jump if zero
+020A:0A61  E8 00E8				call	sub_6			; (0B4C)
+020A:0A64  E8 010D				call	sub_8			; (0B74)
+020A:0A67  E8 FD6F				call	sub_2			; (07D9)
+020A:0A6A  73 45				jnc	loc_47			; Jump if carry=0
+020A:0A6C  E8 014C				call	sub_9			; (0BBB)
+020A:0A6F  89 1E 001A				mov	word ptr ds:[1Ah],bx	; (020A:001A=0AE9Ch)
+020A:0A73  EB DD				jmp	short loc_43		; (0A52)
+020A:0A75			loc_44:
+020A:0A75  8B 1E 001A				mov	bx,word ptr ds:[1Ah]	; (020A:001A=0AE9Ch)
+020A:0A79  3B 1E 001C				cmp	bx,word ptr ds:[1Ch]	; (020A:001C=148Fh)
+020A:0A7D  8B 07				mov	ax,[bx]
+020A:0A7F  E8 0146				call	sub_10			; (0BC8)
+020A:0A82  74 0C				jz	loc_45			; Jump if zero
+020A:0A84  E8 00C5				call	sub_6			; (0B4C)
+020A:0A87  E8 00D1				call	sub_7			; (0B5B)
+020A:0A8A  E8 FD4C				call	sub_2			; (07D9)
+020A:0A8D  EB 22				jmp	short loc_47		; (0AB1)
+020A:0A8F  90					nop
+020A:0A90			loc_45:
+020A:0A90  E8 FD46				call	sub_2			; (07D9)
+020A:0A93  50					push	ax
+020A:0A94  9F					lahf				; Load ah from flags
+020A:0A95  50					push	ax
+020A:0A96  2E: A1 09B8				mov	ax,cs:data_27		; (020A:09B8=0)
+020A:0A9A  2E: 3B 06 09C0			cmp	ax,cs:data_29		; (020A:09C0=32h)
+020A:0A9F  72 08				jb	loc_46			; Jump if below
+           Temp.lst				Sourcer	v5.10   14-Sep-20  10:02 am   Page 9
+
+020A:0AA1  B4 01				mov	ah,1
+020A:0AA3  C4					db	0C4h
+020A:0AA4  C4 16 06EB				les	dx,dword ptr ds:[6EBh]	; (020A:06EB=52D2h) Load 32 bit ptr
+020A:0AA8  90					nop
+020A:0AA9			loc_46:
+020A:0AA9  2E: FF 06 09BC			inc	cs:data_28		; (020A:09BC=324h)
+020A:0AAE  58					pop	ax
+020A:0AAF  9E					sahf				; Store ah into flags
+020A:0AB0  58					pop	ax
+020A:0AB1			loc_47:
+020A:0AB1  5B					pop	bx
+020A:0AB2  1F					pop	ds
+020A:0AB3  CA 0002				retf	2			; Return far
+020A:0AB6			loc_48:
+020A:0AB6  80 EC 10				sub	ah,10h
+020A:0AB9  74 2C				jz	loc_50			; Jump if zero
+020A:0ABB  FE CC				dec	ah
+020A:0ABD  74 B6				jz	loc_44			; Jump if zero
+020A:0ABF  FE CC				dec	ah
+020A:0AC1  74 03				jz	loc_49			; Jump if zero
+020A:0AC3  E9 FF28				jmp	loc_35			; (09EE)
+020A:0AC6			loc_49:
+020A:0AC6  A0 0018				mov	al,byte ptr data_1+2	; (020A:0018=0)
+020A:0AC9  8A E0				mov	ah,al
+020A:0ACB  24 04				and	al,4
+020A:0ACD  51					push	cx
+020A:0ACE  B1 05				mov	cl,5
+020A:0AD0  D2 E0				shl	al,cl			; Shift w/zeros fill
+020A:0AD2  59					pop	cx
+020A:0AD3  80 E4 73				and	ah,73h			; 's'
+020A:0AD6  0A C4				or	al,ah
+020A:0AD8  8A 26 0096				mov	ah,byte ptr ds:[96h]	; (020A:0096=0)
+020A:0ADC  80 E4 0C				and	ah,0Ch
+020A:0ADF  0A E0				or	ah,al
+020A:0AE1  A0 0017				mov	al,byte ptr data_1+1	; (020A:0017=0)
+020A:0AE4  E9 FF07				jmp	loc_35			; (09EE)
+020A:0AE7			loc_50:
+020A:0AE7  8B 1E 001A				mov	bx,word ptr ds:[1Ah]	; (020A:001A=0AE9Ch)
+020A:0AEB  3B 1E 001C				cmp	bx,word ptr ds:[1Ch]	; (020A:001C=148Fh)
+020A:0AEF  75 13				jne	loc_52			; Jump if not equal
+020A:0AF1  E8 FCE5				call	sub_2			; (07D9)
+020A:0AF4  B8 9002				mov	ax,9002h
+020A:0AF7  CD 15				int	15h			; General services, ah=func 90h
+										;  device busy, al=type,
+										;   es:bx=ptr of request block
+020A:0AF9			loc_51:
+020A:0AF9  E8 FCBD				call	sub_1			; (07B9)
+020A:0AFC  8B 1E 001A				mov	bx,word ptr ds:[1Ah]	; (020A:001A=0AE9Ch)
+020A:0B00  3B 1E 001C				cmp	bx,word ptr ds:[1Ch]	; (020A:001C=148Fh)
+020A:0B04			loc_52:
+020A:0B04  E8 00C1				call	sub_10			; (0BC8)
+020A:0B07  75 05				jnz	loc_53			; Jump if not zero
+020A:0B09  E8 0014				call	sub_5			; (0B20)
+020A:0B0C  EB EB				jmp	short loc_51		; (0AF9)
+020A:0B0E			loc_53:
+020A:0B0E  8B 07				mov	ax,[bx]
+020A:0B10  E8 00A8				call	sub_9			; (0BBB)
+           Temp.lst				Sourcer	v5.10   14-Sep-20  10:02 am   Page 10
+
+020A:0B13  89 1E 001A				mov	word ptr ds:[1Ah],bx	; (020A:001A=0AE9Ch)
+020A:0B17  E8 0041				call	sub_7			; (0B5B)
+020A:0B1A  E8 002F				call	sub_6			; (0B4C)
+020A:0B1D  E9 FECE				jmp	loc_35			; (09EE)
+
+				;��������������������������������������������������������������������������
+				;                              SUBROUTINE
+				;��������������������������������������������������������������������������
+
+				sub_5		proc	near
+020A:0B20  50					push	ax
+020A:0B21  E8 FCB5				call	sub_2			; (07D9)
+020A:0B24  B4 02				mov	ah,2
+020A:0B26  C4					db	0C4h
+020A:0B27  C4 16 1E8B				les	dx,dword ptr ds:[1E8Bh]	; (020A:1E8B=0) Load 32 bit ptr
+020A:0B2B  1A 00				sbb	al,[bx+si]
+020A:0B2D  3B 1E 001C				cmp	bx,word ptr ds:[1Ch]	; (020A:001C=148Fh)
+020A:0B31  75 17				jne	loc_56			; Jump if not equal
+020A:0B33  2E: A1 09B8				mov	ax,cs:data_27		; (020A:09B8=0)
+020A:0B37  2E: 3B 06 09C0			cmp	ax,cs:data_29		; (020A:09C0=32h)
+020A:0B3C  73 07				jae	loc_55			; Jump if above or =
+020A:0B3E  2E: FF 06 09BC			inc	cs:data_28		; (020A:09BC=39Eh)
+020A:0B43  EB E4		;*		jmp	short loc_54		;*(0B29)
+020A:0B43  EB E4				db	0EBh,0E4h
+020A:0B45			loc_55:
+020A:0B45  B4 01				mov	ah,1
+020A:0B47  C4					db	0C4h
+020A:0B48  C4 16 C358				les	dx,dword ptr ds:[0C358h]	; (020A:C358=3D1h) Load 32 bit ptr
+
+				;���� External Entry into Subroutine ��������������������������������������
+
+				sub_6:
+020A:0B4C  2E: C7 06 09B8 0000			mov	cs:data_27,0		; (020A:09B8=0)
+020A:0B53  2E: C7 06 09BC 0000			mov	cs:data_28,0		; (020A:09BC=3AEh)
+020A:0B5A  C3					retn
+				sub_5		endp
+
+
+				;��������������������������������������������������������������������������
+				;                              SUBROUTINE
+				;��������������������������������������������������������������������������
+
+				sub_7		proc	near
+020A:0B5B  53					push	bx
+020A:0B5C  50					push	ax
+020A:0B5D  9F					lahf				; Load ah from flags
+020A:0B5E  8B D8				mov	bx,ax
+020A:0B60  58					pop	ax
+020A:0B61  53					push	bx
+020A:0B62  3C F0				cmp	al,0F0h
+020A:0B64  75 06				jne	loc_57			; Jump if not equal
+020A:0B66  0A E4				or	ah,ah			; Zero ?
+020A:0B68  74 02				jz	loc_57			; Jump if zero
+020A:0B6A  32 C0				xor	al,al			; Zero register
+020A:0B6C			loc_57:
+020A:0B6C  8B D8				mov	bx,ax
+020A:0B6E  58					pop	ax
+           Temp.lst				Sourcer	v5.10   14-Sep-20  10:02 am   Page 11
+
+020A:0B6F  9E					sahf				; Store ah into flags
+020A:0B70  8B C3				mov	ax,bx
+020A:0B72  5B					pop	bx
+020A:0B73  C3					retn
+				sub_7		endp
+
+
+				;��������������������������������������������������������������������������
+				;                              SUBROUTINE
+				;��������������������������������������������������������������������������
+
+				sub_8		proc	near
+020A:0B74  53					push	bx
+020A:0B75  50					push	ax
+020A:0B76  9F					lahf				; Load ah from flags
+020A:0B77  8B D8				mov	bx,ax
+020A:0B79  58					pop	ax
+020A:0B7A  53					push	bx
+020A:0B7B  80 FC E0				cmp	ah,0E0h
+020A:0B7E  75 0F				jne	loc_58			; Jump if not equal
+020A:0B80  B4 1C				mov	ah,1Ch
+020A:0B82  3C 0D				cmp	al,0Dh
+020A:0B84  74 23				je	loc_60			; Jump if equal
+020A:0B86  3C 0A				cmp	al,0Ah
+020A:0B88  74 1F				je	loc_60			; Jump if equal
+020A:0B8A  B4 35				mov	ah,35h			; '5'
+020A:0B8C  EB 1B				jmp	short loc_60		; (0BA9)
+020A:0B8E  90					nop
+020A:0B8F			loc_58:
+020A:0B8F  80 FC 84				cmp	ah,84h
+020A:0B92  77 1E				ja	loc_61			; Jump if above
+020A:0B94  3C F0				cmp	al,0F0h
+020A:0B96  75 07				jne	loc_59			; Jump if not equal
+020A:0B98  0A E4				or	ah,ah			; Zero ?
+020A:0B9A  74 0D				jz	loc_60			; Jump if zero
+020A:0B9C  EB 14				jmp	short loc_61		; (0BB2)
+020A:0B9E  90					nop
+020A:0B9F			loc_59:
+020A:0B9F  3C E0				cmp	al,0E0h
+020A:0BA1  75 06				jne	loc_60			; Jump if not equal
+020A:0BA3  0A E4				or	ah,ah			; Zero ?
+020A:0BA5  74 02				jz	loc_60			; Jump if zero
+020A:0BA7  32 C0				xor	al,al			; Zero register
+020A:0BA9			loc_60:
+020A:0BA9  8B D8				mov	bx,ax
+020A:0BAB  58					pop	ax
+020A:0BAC  9E					sahf				; Store ah into flags
+020A:0BAD  8B C3				mov	ax,bx
+020A:0BAF  5B					pop	bx
+020A:0BB0  F8					clc				; Clear carry flag
+020A:0BB1  C3					retn
+020A:0BB2			loc_61:
+020A:0BB2  8B D8				mov	bx,ax
+020A:0BB4  58					pop	ax
+020A:0BB5  9E					sahf				; Store ah into flags
+020A:0BB6  8B C3				mov	ax,bx
+020A:0BB8  5B					pop	bx
+           Temp.lst				Sourcer	v5.10   14-Sep-20  10:02 am   Page 12
+
+020A:0BB9  F9					stc				; Set carry flag
+020A:0BBA  C3					retn
+				sub_8		endp
+
+
+				;��������������������������������������������������������������������������
+				;                              SUBROUTINE
+				;��������������������������������������������������������������������������
+
+				sub_9		proc	near
+020A:0BBB  43					inc	bx
+020A:0BBC  43					inc	bx
+020A:0BBD  3B 1E 0082				cmp	bx,word ptr ds:[82h]	; (020A:0082=10h)
+020A:0BC1  75 04				jne	loc_62			; Jump if not equal
+020A:0BC3  8B 1E 0080				mov	bx,word ptr ds:[80h]	; (020A:0080=1850h)
+020A:0BC7			loc_62:
+020A:0BC7  C3					retn
+				sub_9		endp
+
+
+				;��������������������������������������������������������������������������
+				;                              SUBROUTINE
+				;��������������������������������������������������������������������������
+
+				sub_10		proc	near
+020A:0BC8  53					push	bx
+020A:0BC9  51					push	cx
+020A:0BCA  50					push	ax
+020A:0BCB  9F					lahf				; Load ah from flags
+020A:0BCC  50					push	ax
+020A:0BCD  A0 0017				mov	al,byte ptr data_1+1	; (020A:0017=0)
+020A:0BD0  24 70				and	al,70h			; 'p'
+020A:0BD2  B1 04				mov	cl,4
+020A:0BD4  D2 E8				shr	al,cl			; Shift w/zeros fill
+020A:0BD6  24 07				and	al,7
+020A:0BD8  8A 1E 0097				mov	bl,byte ptr ds:[97h]	; (020A:0097=0)
+020A:0BDC  32 D8				xor	bl,al
+020A:0BDE  80 E3 07				and	bl,7
+020A:0BE1  74 25				jz	loc_63			; Jump if zero
+020A:0BE3  F6 06 0097 40			test	byte ptr ds:[97h],40h	; (020A:0097=0) '@'
+020A:0BE8  75 1E				jnz	loc_63			; Jump if not zero
+020A:0BEA  80 0E 0097 40			or	byte ptr ds:[97h],40h	; (020A:0097=0) '@'
+020A:0BEF  D2 E3				shl	bl,cl			; Shift w/zeros fill
+020A:0BF1  0A C3				or	al,bl
+020A:0BF3  B4 03				mov	ah,3
+020A:0BF5  C4					db	0C4h
+020A:0BF6  C4 16 2680				les	dx,dword ptr ds:[2680h]	; (020A:2680=2D9h) Load 32 bit ptr
+020A:0BFA  97					xchg	di,ax
+020A:0BFB  00 F8				add	al,bh
+020A:0BFD  24 0F				and	al,0Fh
+020A:0BFF  08 06 0097				or	byte ptr ds:[97h],al	; (020A:0097=0)
+020A:0C03  80 26 0097 BF			and	byte ptr ds:[97h],0BFh	; (020A:0097=0)
+020A:0C08			loc_63:
+020A:0C08  58					pop	ax
+020A:0C09  9E					sahf				; Store ah into flags
+020A:0C0A  58					pop	ax
+020A:0C0B  59					pop	cx
+           Temp.lst				Sourcer	v5.10   14-Sep-20  10:02 am   Page 13
+
+020A:0C0C  5B					pop	bx
+020A:0C0D  C3					retn
+				sub_10		endp
+
+020A:0C0E  C4					db	0C4h
+							                        ;* No entry point to code
+020A:0C0F  C4 18				les	bx,dword ptr [bx+si]	; Load 32 bit ptr
+020A:0C11  E9 FA38				jmp	$-5C5h
+020A:0C14  C4					db	0C4h
+							                        ;* No entry point to code
+020A:0C15  C4 19				les	bx,dword ptr [bx+di]	; Load 32 bit ptr
+020A:0C17  E9 FA32				jmp	$-5CBh
+020A:0C1A  0A1D			data_30		dw	0A1Dh
+020A:0C1C  000A			data_31		dw	0Ah
+020A:0C1E  01			data_32		db	1
+020A:0C1F  E8 FBB7				call	sub_2			; (07D9)
+020A:0C22  80 FC 02				cmp	ah,2
+020A:0C25  72 06				jb	loc_64			; Jump if below
+020A:0C27  C4					db	0C4h
+020A:0C28  C4 1A				les	bx,dword ptr [bp+si]	; Load 32 bit ptr
+020A:0C2A  E9 FA1F				jmp	$-5DEh
+020A:0C2D			loc_64:
+020A:0C2D  1E					push	ds
+020A:0C2E  53					push	bx
+020A:0C2F  50					push	ax
+020A:0C30  B8 0040				mov	ax,40h
+020A:0C33  8E D8				mov	ds,ax
+020A:0C35  58					pop	ax
+020A:0C36  E8 FB80				call	sub_1			; (07B9)
+020A:0C39  0A E4				or	ah,ah			; Zero ?
+020A:0C3B  75 3F				jnz	loc_67			; Jump if not zero
+020A:0C3D			loc_65:
+020A:0C3D  A0 0070				mov	al,byte ptr ds:[70h]	; (0040:0070=0)
+020A:0C40  8B 0E 006E				mov	cx,word ptr ds:[6Eh]	; (0040:006E=0Ah)
+020A:0C44  8B 16 006C				mov	dx,word ptr ds:[6Ch]	; (0040:006C=0A1Dh)
+020A:0C48  2E: 39 0E 0C1C			cmp	cs:data_31,cx		; (020A:0C1C=0Ah)
+020A:0C4D  75 35				jne	loc_68			; Jump if not equal
+020A:0C4F  2E: 8B 1E 0C1A			mov	bx,cs:data_30		; (020A:0C1A=0A1Dh)
+020A:0C54  3B DA				cmp	bx,dx
+020A:0C56  74 05				je	loc_66			; Jump if equal
+020A:0C58  43					inc	bx
+020A:0C59  3B DA				cmp	bx,dx
+020A:0C5B  75 27				jne	loc_68			; Jump if not equal
+020A:0C5D			loc_66:
+020A:0C5D  2E: FE 06 0C1E			inc	cs:data_32		; (020A:0C1E=1)
+020A:0C62  2E: 80 3E 0C1E 10			cmp	cs:data_32,10h		; (020A:0C1E=1)
+020A:0C68  72 20				jb	loc_69			; Jump if below
+020A:0C6A  E8 FB6C				call	sub_2			; (07D9)
+020A:0C6D  33 C0				xor	ax,ax			; Zero register
+020A:0C6F  2E: FF 0E 0C1A			dec	cs:data_30		; (020A:0C1A=0A1Dh)
+020A:0C74  C4					db	0C4h
+020A:0C75  C4 5A E8				les	bx,dword ptr [bp+si-18h]	; Load 32 bit ptr
+020A:0C78  3F					aas				; Ascii adjust
+020A:0C79  FB					sti				; Enable interrupts
+020A:0C7A  EB C1				jmp	short loc_65		; (0C3D)
+020A:0C7C			loc_67:
+020A:0C7C  89 16 006C				mov	word ptr ds:[6Ch],dx	; (0040:006C=0A1Dh)
+           Temp.lst				Sourcer	v5.10   14-Sep-20  10:02 am   Page 14
+
+020A:0C80  89 0E 006E				mov	word ptr ds:[6Eh],cx	; (0040:006E=0Ah)
+020A:0C84			loc_68:
+020A:0C84  2E: C6 06 0C1E 00			mov	cs:data_32,0		; (020A:0C1E=1)
+020A:0C8A			loc_69:
+020A:0C8A  2E: 89 16 0C1A			mov	cs:data_30,dx		; (020A:0C1A=0A1Dh)
+020A:0C8F  2E: 89 0E 0C1C			mov	cs:data_31,cx		; (020A:0C1C=0Ah)
+020A:0C94  C6 06 0070 00			mov	byte ptr ds:[70h],0	; (0040:0070=0)
+020A:0C99  5B					pop	bx
+020A:0C9A  1F					pop	ds
+020A:0C9B  E9 F9AE				jmp	$-64Fh
+020A:0C9E  C4					db	0C4h
+							                        ;* No entry point to code
+020A:0C9F  C4 1E A8E9				les	bx,dword ptr ds:[0A8E9h]	; (020A:A8E9=845h) Load 32 bit ptr
+020A:0CA3  F9					stc				; Set carry flag
+020A:0CA4  C4					db	0C4h
+020A:0CA5  C4 70 E9				les	si,dword ptr [bx+si-17h]	; Load 32 bit ptr
+020A:0CA8  A2 E8F9				mov	byte ptr ds:[0E8F9h],al	; (020A:E8F9=0)
+020A:0CAB  2C FB				sub	al,0FBh
+020A:0CAD  CD 4A				int	4Ah			; RTC Alarm occurred
+020A:0CAF  EB 01				jmp	short $+3		; delay for I/O
+020A:0CB1  90					nop
+020A:0CB2  EB 01				jmp	short $+3		; delay for I/O
+020A:0CB4  90					nop
+020A:0CB5  EB 01				jmp	short $+3		; delay for I/O
+020A:0CB7  90					nop
+020A:0CB8  E8 FAFE				call	sub_1			; (07B9)
+020A:0CBB  C4					db	0C4h
+020A:0CBC  C4					db	0C4h
+020A:0CBD  FE C4				inc	ah
+020A:0CBF  C4 71 CD				les	si,dword ptr [bx+di-33h]	; Load 32 bit ptr
+020A:0CC2  0A E9				or	ch,cl
+020A:0CC4  86 F9				xchg	bh,cl
+020A:0CC6  C4					db	0C4h
+020A:0CC7			loc_70:
+020A:0CC7  C4 75 CD				les	si,dword ptr [di-33h]	; Load 32 bit ptr
+020A:0CCA  02 E9				add	ch,cl
+020A:0CCC  7E F9				jle	loc_70			; Jump if < or =
+020A:0CCE  E8 FB08				call	sub_2			; (07D9)
+020A:0CD1  EB 00				jmp	short $+2		; delay for I/O
+020A:0CD3  EB 00				jmp	short $+2		; delay for I/O
+020A:0CD5  EB 00				jmp	short $+2		; delay for I/O
+020A:0CD7  C4					db	0C4h
+020A:0CD8  C4					db	0C4h
+020A:0CD9  FE					db	0FEh
+020A:0CDA  EB 0B				jmp	short loc_72		; (0CE7)
+							                        ;* No entry point to code
+020A:0CDC  3C 2F				cmp	al,2Fh			; '/'
+020A:0CDE  75 06				jne	loc_71			; Jump if not equal
+020A:0CE0  44					inc	sp
+020A:0CE1  D9					db	0D9h
+020A:0CE2  02 4E 00				add	cl,[bp]
+020A:0CE5  40					inc	ax
+020A:0CE6			loc_71:
+020A:0CE6  F8					clc				; Clear carry flag
+020A:0CE7			loc_72:
+020A:0CE7  C3					retn
+020A:0CE8  48					dec	ax
+           Temp.lst				Sourcer	v5.10   14-Sep-20  10:02 am   Page 15
+
+020A:0CE9  49					dec	cx
+020A:0CEA  4D					dec	bp
+020A:0CEB  45					inc	bp
+020A:0CEC  4D					dec	bp
+020A:0CED  20 20				and	[bx+si],ah
+020A:0CEF  20 24				and	[si],ah
+020A:0CF1  00 70 00		;*		add	[bx+si+0],dh
+020A:0CF1  00 70 00				db	 00h, 70h, 00h
+020A:0CF4  00 A0 0041				add	byte ptr ds:[41h][bx+si],ah	; (020A:0041=18h)
+020A:0CF8  4C					dec	sp
+020A:0CF9  00 58 4D				add	[bx+si+4Dh],bl
+020A:0CFC  53					push	bx
+020A:0CFD  58					pop	ax
+020A:0CFE  58					pop	ax
+020A:0CFF  58					pop	ax
+020A:0D00  58					pop	ax
+020A:0D01  30 DE				xor	dh,bl
+020A:0D03  04 74				add	al,74h			; 't'
+020A:0D05  00 82 FB04				add	[bp+si-4FCh],al
+020A:0D09  8D 54 00				lea	dx,[si+0]		; Load effective addr
+020A:0D0C  00 00				add	[bx+si],al
+020A:0D0E  42					inc	dx
+020A:0D0F  05 020A				add	ax,20Ah
+020A:0D12  A4					movsb				; Mov [si] to es:[di]
+020A:0D13  10 A7 0100				adc	byte ptr ds:[100h][bx],ah	; (020A:0100=28h)
+020A:0D17  01 01				add	[bx+di],ax
+020A:0D19  01 00				add	[bx+si],ax
+020A:0D1B  01 00				add	[bx+si],ax
+020A:0D1D  01 00				add	[bx+si],ax
+020A:0D1F  01 00				add	[bx+si],ax
+020A:0D21  000A[00]				db	10 dup (0)
+020A:0D2B  02 01				add	al,[bx+di]
+020A:0D2D  00					db	0
+020A:0D2E  00 00				add	[bx+si],al
+020A:0D30  00 2E 1E89				add	byte ptr ds:[1E89h],ch	; (020A:1E89=0)
+020A:0D34  16					push	ss
+020A:0D35  00 2E 068C				add	byte ptr ds:[68Ch],ch	; (020A:068C=2)
+020A:0D39  18 00				sbb	[bx+si],al
+020A:0D3B  CB					retf
+							                        ;* No entry point to code
+020A:0D3C  53					push	bx
+020A:0D3D  1E					push	ds
+020A:0D3E  2E: C5 1E 0016			lds	bx,dword ptr cs:[16h]	; (020A:0016=0) Load 32 bit ptr
+020A:0D43  80 7F 02 10				cmp	byte ptr [bx+2],10h
+020A:0D47  C7 47 03 0100			mov	word ptr [bx+3],100h
+020A:0D4C  76 05				jbe	loc_73			; Jump if below or =
+020A:0D4E  81 4F 03 8003			or	word ptr [bx+3],8003h
+020A:0D53			loc_73:
+020A:0D53  1F					pop	ds
+020A:0D54  5B					pop	bx
+020A:0D55  CB					retf
+							                        ;* No entry point to code
+020A:0D56  E8 03DB				call	$+3DEh
+020A:0D59  80 FC 43				cmp	ah,43h			; 'C'
+020A:0D5C  75 15				jne	loc_75			; Jump if not equal
+020A:0D5E  0A C0				or	al,al			; Zero ?
+020A:0D60  75 05				jnz	loc_74			; Jump if not zero
+           Temp.lst				Sourcer	v5.10   14-Sep-20  10:02 am   Page 16
+
+020A:0D62  B0 80				mov	al,80h
+020A:0D64  E9 03F5				jmp	$+3F8h
+020A:0D67			loc_74:
+020A:0D67  3C 10				cmp	al,10h
+020A:0D69  75 08				jne	loc_75			; Jump if not equal
+020A:0D6B  0E					push	cs
+020A:0D6C  07					pop	es
+020A:0D6D  BB 00AF				mov	bx,0AFh
+020A:0D70  E9 03E9				jmp	$+3ECh
+020A:0D73			loc_75:
+020A:0D73  E8 039E				call	$+3A1h
+020A:0D76  2E: FF 2E 0022			jmp	dword ptr cs:[22h]	; (020A:0022=0FFh)
+							                        ;* No entry point to code
+020A:0D7B  12 A0 0265				adc	ah,byte ptr ds:[265h][bx+si]	; (020A:0265=0)
+020A:0D7F  98					cbw				; Convrt byte to word
+020A:0D80  02 B2 D402				add	dh,[bp+si-2BFEh]
+020A:0D84  02 F6				add	dh,dh
+020A:0D86  02 30				add	dh,[bx+si]
+020A:0D88  03 99 2B03				add	bx,word ptr ds:[2B03h][bx+di]	; (020A:2B03=0EFA0h)
+020A:0D8C  A0 A03C				mov	al,byte ptr ds:[0A03Ch]	; (020A:A03C=26h)
+020A:0D8F  94					xchg	sp,ax
+020A:0D90  A0 A264				mov	al,byte ptr ds:[0A264h]	; (020A:A264=0B2h)
+020A:0D93  CF					iret				; Interrupt return
+
