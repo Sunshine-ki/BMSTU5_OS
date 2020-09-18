@@ -1,1 +1,1 @@
-# BMSTU5_OC
+# BMSTU5_OS
