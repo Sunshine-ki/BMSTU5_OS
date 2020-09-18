@@ -24,7 +24,7 @@
 020A:0760  83 3E 006E 18			cmp	word ptr ds:[6Eh],18h	; (0040:006E=0Ah)
 ; Если еще не 24, то прыгаем на loc_2
 020A:0765  75 15				jne	loc_2			; Jump if not equal
-; Сравниваем 0040:006C (0B0h=176)
+; Сравниваем 0040:006C (B0h=11)
 020A:0767  81 3E 006C 00B0			cmp	word ptr ds:[6Ch],0B0h	; (0040:006C=0A1Dh)
 020A:076D  75 0D				jne	loc_2			; Jump if not equal
 020A:076F  A3 006E				mov	word ptr ds:[6Eh],ax	; (0040:006E=0Ah)
@@ -33,20 +33,26 @@
 020A:077A  0C 08				or	al,8
 020A:077C			loc_2:
 020A:077C  50					push	ax
-020A:077D  FE 0E 0040				dec	byte ptr ds:[40h]	; (0040:0040=2Ch)
+020A:077D  FE 0E 0040			dec	byte ptr ds:[40h]	; (0040:0040=2Ch)
 020A:0781  75 0B				jnz	loc_3			; Jump if not zero
-020A:0783  80 26 003F F0			and	byte ptr ds:[3Fh],0F0h	; (0040:003F=0)
+020A:0783  80 26 003F F0		and	byte ptr ds:[3Fh],0F0h	; (0040:003F=0)
 020A:0788  B0 0C				mov	al,0Ch
 020A:078A  BA 03F2				mov	dx,3F2h
+; Порт 3F2 - (Имя порта) Порт цифрового управления|(Расположение)Внешнее оборудование|
+(Тип порта)Вывод (https://ru.qwe.wiki/wiki/Floppy-disk_controller).
+; Инструкция OUT выводит данные из регистра AL или AX (ИСТОЧНИК) в порт ввода-вывода.
 020A:078D  EE					out	dx,al			; port 3F2h, dsk0 contrl output
 020A:078E			loc_3:
 020A:078E  58					pop	ax
-020A:078F  F7 06 0314 0004			test	word ptr ds:[314h],4	; (0040:0314=3200h)
+; 
+020A:078F  F7 06 0314 0004		test	word ptr ds:[314h],4	; (0040:0314=3200h)
 020A:0795  75 0C				jnz	loc_4			; Jump if not zero
+; LAHF: Загрузка флагов в регистр АН.Загружает значение флагового регистра в регистр  АН. 
 020A:0797  9F					lahf				; Load ah from flags
+; Обмен ah и al.
 020A:0798  86 E0				xchg	ah,al
 020A:079A  50					push	ax
-020A:079B  26: FF 1E 0070			call	dword ptr es:[70h]	; (0000:0070=6ADh)
+020A:079B  26: FF 1E 0070		call	dword ptr es:[70h]	; (0000:0070=6ADh)
 020A:07A0  EB 03				jmp	short loc_5		; (07A5)
 020A:07A2  90					nop
 020A:07A3			loc_4:
