@@ -159,17 +159,18 @@ data32 segment para 'data'
 
     syml_pos      dd 2 * 80 * 5
 
-    interval=10
-
-    mem_pos=30*2
+    mem_pos=0 
     ; позиция на экране значения кол-ва доступной памяти (имеется ввиду то, что после `Memory:`)
-    mem_value_pos=36*2
-    mb_pos=45*2
-    cursor_pos=80*2*2+38*2
+    mem_value_pos=14 + 16 ; 14: пропускаем нашу строку (это ее длина), 
+    ; 16: FFFF FFFF - max возможное значение, кот-ое мы можем вывести, 
+    ; Длина = 8, умножаем на 2, т.к. там еще атрибут учитывается.
+    mb_pos=30 + 2
+    cursor_pos=80 ; 80 * 2 - длина строки. (расширение 80x25 (возможно))
+    ; cursor_pos=80*2*2+38*2
     param=1Eh
 
-    cursor_symb_on=220
-    cursor_symb_off=223
+    cursor_symb=219
+    param_int_8 db 00Fh ; Цвет курсора.
     
     rm_msg      db 27, '[30;42mNow in Real Mode. ', 27, '[0m$', '$'
     pm_msg_wait db 27, '[30;42mPress any button to enter protected mode!', 27, '[0m$'
@@ -207,9 +208,11 @@ pm_start:
         inc esi
     loop print_memory_msg
 
+    ; Считаем и выводим кол-во физической памяти, выделенной dosbox'у.
     call count_memory_proc
     
-    ; Цикл, пока не будет введен Enter (флаг flag_enter_pr выставляется в функции-обработчике нажатия с клавиатуры при нажатии Enter'a)
+    ; Цикл, пока не будет введен Enter
+    ; (Флаг flag_enter_pr выставляется в функции-обработчике нажатия с клавиатуры при нажатии Enter'a)
     proccess:
         test flag_enter_pr, 1 ; если flag = 1, то выход
     jz  proccess
@@ -235,27 +238,20 @@ pm_start:
     except_13 endp
 
 
-    new_int08 proc uses eax ; курсор
-        mov edi, cursor_pos ; поместим в edi позицию для курсора
-        cmp cnt_time, interval ; сравним время, которое мы насчитали (cnt_time с interval'ом)
-        je X ; если равно, то меняем курсор на включенный режим
-        cmp cnt_time, interval*2 ; если равно interval * 2, то меняем обратно на выключенный и обнуляем
-        jne skip ; если не равно, то просто печатаем
+    new_int08 proc uses eax 
+        mov edi, cursor_pos ; поместим в edi позицию для вывода
 
-        mov al, cursor_symb_off
-        mov cnt_time, 0
-        jmp pr
-    X:
-        mov al, cursor_symb_on
-    pr:
-        mov ah, param
-        stosw
+        mov ah, param_int_8 ; В ah помещаем цвет текста.
+        ror ah, 1           ; Сдвигаем циклически вправо параметр (он примет какое-то новое значение) 
+        ; Т.е. он будет меняться вот так:
+        ; 0000 1111 -> 0001 1110 -> 0011 1100 и т.д. циклически.
+        mov param_int_8, ah
+        mov al, cursor_symb ; Символ, который мы хотим вывести (в моем случае просто квадрат).
+        stosw ; al (символ) с параметром (ah) перемещается в область памяти es:di
 
-    skip:
-        mov  al, cnt_time
-        inc al
-        mov cnt_time, al
-        
+
+        ; используется только в аппаратных прерываниях для корректного завершения
+        ; (разрешаем обработку прерываний с меньшим приоритетом)!!
         mov al, 20h
         out 20h, al
 
@@ -363,7 +359,7 @@ pm_start:
         ; функция, которая печатает eax (в котором лежит найденное кол-во мегабайт)
         call print_count_memory
 
-        ; печать надписи Mb (мегабайты)
+        ; Печать надписи Mb (мегабайты)
         mov ah, param
         mov ebx, mb_pos
         mov al, 'M'
@@ -382,7 +378,7 @@ pm_start:
     print_count_memory proc uses ecx ebx edx
         ; В eax лежит кол-во мегабайт.
         ; В ebx лежит mem_value_pos.
-        add ebx, 10h ; сдвигаем ebx на 8 позиций (будем печатать 8 символов)
+        ; add ebx, 10h ; сдвигаем ebx на 8 позиций (будем печатать 8 символов)
         mov ecx, 8
         mov dh, param
 
