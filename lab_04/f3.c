@@ -10,6 +10,7 @@
 #define OK 0
 #define ERROR 1
 #define ERROR_FORK -1
+#define ERROR_EXEC -1
 
 void check_status(int status);
 
@@ -33,7 +34,7 @@ int main()
 		perror("Can\'t fork.\n");
 		return ERROR;
 	}
-	else if (!childpid_1) // Это процесс потом (ребенок).
+	else if (!childpid_1) // Это процесс потомок (ребенок).
 	{
 		// p - определяет, что функция будет искать "дочернюю"
 		// программу     в    директориях,    определяемых
@@ -41,19 +42,12 @@ int main()
 		// будет  производиться только в рабочем каталоге.
 		printf("First child: id: %d ppid: %d  pgrp: %d\n", getpid(), getppid(), getpgrp());
 
-		// TODO: Лучше наверное сделать разные программы ?
-		if (execlp("cat", "cat", "text1.txt", NULL) == -1)
+		if (execlp("cat", "cat", "text1.txt", NULL) == ERROR_EXEC)
 		{
 			perror("First child can\'t exec");
 			exit(ERROR);
 		}
-	}
-	else
-	{
-		// Это процесс предок.
-		child_pid = wait(&status);
-		printf("status: %d, child_pid: %d\n", status, child_pid);
-		check_status(status);
+		exit(OK);
 	}
 
 	// Аналогично 2 процесс.
@@ -64,22 +58,26 @@ int main()
 	}
 	else if (!childpid_2)
 	{
-		// Это процесс потом (ребенок).
+		// Это процесс потомок.
 		printf("Second child: id: %d ppid: %d  pgrp: %d\n", getpid(), getppid(), getpgrp());
-		if (execlp("cat", "cat", "text2.txt", NULL) == -1)
+		if (execlp("cat", "cat", "text2.txt", NULL) == ERROR_EXEC)
 		{
 			perror("Second child can\'t exec");
 			exit(ERROR);
 		}
+		exit(OK);
 	}
-	else
-	{
-		// Это процесс предок.
-		child_pid = wait(&status);
-		printf("status: %d, child_pid: %d\n", status, child_pid);
-		check_status(status);
-		printf("Parent: id: %d pgrp: %d child1: %d child2: %d\n", getpid(), getpgrp(), childpid_1, childpid_2);
-	}
+
+	child_pid = wait(&status);
+	printf("status: %d, child_pid: %d\n", status, child_pid);
+	check_status(status);
+
+	child_pid = wait(&status);
+	printf("status: %d, child_pid: %d\n", status, child_pid);
+	check_status(status);
+
+	printf("Parent: id: %d pgrp: %d child1: %d child2: %d\n", getpid(), getpgrp(), childpid_1, childpid_2);
+
 	return OK;
 }
 

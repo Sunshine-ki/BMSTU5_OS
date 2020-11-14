@@ -11,14 +11,13 @@
 #define OK 0
 #define ERROR 1
 #define ERROR_FORK -1
+#define SLEEP_TIME 2
 
 void check_status(int status);
 
 int main()
 {
 	int childpid_1, childpid_2;
-	int status;
-	pid_t child_pid;
 
 	if ((childpid_1 = fork()) == ERROR_FORK)
 	{
@@ -30,14 +29,8 @@ int main()
 	{
 		// Это процесс потомок.
 		printf("First child: id: %d ppid: %d  pgrp: %d\n", getpid(), getppid(), getpgrp());
+		sleep(SLEEP_TIME);
 		exit(OK);
-	}
-	else
-	{
-		// Это процесс предок.
-		child_pid = wait(&status);
-		printf("status: %d, child_pid: %d\n", status, child_pid);
-		check_status(status);
 	}
 
 	// Аналогично 2 процесс.
@@ -50,17 +43,22 @@ int main()
 	{
 		// Это процесс потомок.
 		printf("Second child: id: %d ppid: %d  pgrp: %d\n", getpid(), getppid(), getpgrp());
+		sleep(SLEEP_TIME);
 		exit(OK);
 	}
-	else
-	{
-		// TODO: Parent должен проанализировать status
-		// Это процесс предок.
-		child_pid = wait(&status);
-		printf("status: %d, child_pid: %d\n", status, child_pid);
-		check_status(status);
-		printf("Parent: id: %d pgrp: %d child1: %d child2: %d\n", getpid(), getpgrp(), childpid_1, childpid_2);
-	}
+
+	int status;
+	pid_t child_pid;
+
+	child_pid = wait(&status);
+	printf("status: %d, child_pid: %d\n", status, child_pid);
+	check_status(status);
+
+	child_pid = wait(&status);
+	printf("status: %d, child_pid: %d\n", status, child_pid);
+	check_status(status);
+
+	printf("Parent: id: %d pgrp: %d child1: %d child2: %d\n", getpid(), getpgrp(), childpid_1, childpid_2);
 
 	return OK;
 }

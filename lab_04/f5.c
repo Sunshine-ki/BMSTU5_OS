@@ -11,17 +11,24 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <signal.h>
+#include <stdbool.h> // bool.
 
 #define OK 0
 #define ERROR 1
 #define ERROR_FORK -1
+#define ERROR_PIPE -1
 #define LEN 32
+
+// TODO: Изменить ход программы.
+// Глобальная переменная и тд.
+
+_Bool flag = false;
 
 void check_status(int status);
 
 void catch_sig(int sig_numb)
 {
-	signal(sig_numb, catch_sig);
+	flag = true;
 	printf("catch_sig: %d\n", sig_numb);
 }
 
@@ -34,7 +41,7 @@ int main()
 	// 0 - выход для чтения.
 	// 1 - выход для записи.
 
-	if (pipe(fd) < 0)
+	if (pipe(fd) == ERROR_PIPE)
 	{
 		perror("Can\'t pipe.\n");
 		return ERROR;
@@ -46,7 +53,7 @@ int main()
 		perror("Can\'t fork.\n");
 		return ERROR;
 	}
-	else if (!childpid_1) // Это процесс потом (ребенок).
+	else if (!childpid_1) // Это процесс потомок.
 	{
 		close(fd[0]);
 		write(fd[1], "First child write\n", LEN);
@@ -59,35 +66,41 @@ int main()
 		perror("Can\'t fork.\n");
 		return ERROR;
 	}
-	else if (!childpid_2) // Это процесс потом (ребенок).
+	else if (!childpid_2) // Это процесс потомок.
 	{
 		close(fd[0]);
 		write(fd[1], "Second child write\n", LEN);
 		exit(OK);
 	}
 
-	if (childpid_1 && childpid_2)
+	char text[LEN], text2[LEN];
+	pid_t child_pid;
+	int status;
+
+	printf("Parent: press CTRL+C (within 3 seconds)\n");
+	sleep(3);
+
+	close(fd[1]);
+
+	read(fd[0], text, LEN);
+	read(fd[0], text2, LEN);
+
+	printf("Text: %s\n", text);
+	printf("Text: %s\n", text2);
+
+	child_pid = wait(&status);
+	check_status(status);
+
+	child_pid = wait(&status);
+	check_status(status);
+
+	if (flag)
 	{
-		char text[LEN], text2[LEN];
-		pid_t child_pid;
-		int status;
-
-		printf("Parent: press CTRL+C (within 3 seconds)\n");
-		sleep(3);
-
-		close(fd[1]);
-
-		read(fd[0], text, LEN);
-		read(fd[0], text2, LEN);
-
-		printf("Text: %s\n", text);
-		printf("Text: %s\n", text2);
-
-		child_pid = wait(&status);
-		check_status(status);
-
-		child_pid = wait(&status);
-		check_status(status);
+		printf("Вы хотели завершить программу...\n");
+	}
+	else
+	{
+		printf("Завершение программы.\n");
 	}
 
 	return OK;
