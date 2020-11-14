@@ -5,12 +5,15 @@
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <string.h>
 
 #define OK 0
 #define ERROR 1
 #define ERROR_FORK -1
 #define ERROR_PIPE -1
 #define LEN 32
+#define FIRST_TEXT "First child write\n"
+#define SECOND_TEXT "Second child write\n"
 
 void check_status(int status);
 
@@ -36,7 +39,7 @@ int main()
 	else if (!childpid_1) // Это процесс потомок.
 	{
 		close(fd[0]);
-		write(fd[1], "First child write\n", LEN);
+		write(fd[1], FIRST_TEXT, strlen(FIRST_TEXT) + 1);
 		exit(OK);
 	}
 
@@ -49,7 +52,7 @@ int main()
 	else if (!childpid_2) // Это процесс потомок.
 	{
 		close(fd[0]);
-		write(fd[1], "Second child write\n", LEN);
+		write(fd[1], SECOND_TEXT, strlen(SECOND_TEXT) + 1);
 		exit(OK);
 	}
 
