@@ -95,13 +95,9 @@ int main()
 	check_status(status);
 
 	if (flag)
-	{
 		printf("Вы хотели завершить программу...\n");
-	}
 	else
-	{
 		printf("Завершение программы.\n");
-	}
 
 	return OK;
 }

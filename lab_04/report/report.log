@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2020.7.8)  14 NOV 2020 11:52
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2020.7.8)  14 NOV 2020 16:23
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -861,24 +861,75 @@ Package babel Info: Redefining russian shorthand "~
 \openout2 = `01-report.aux'.
 
  (/home/lis/university/github/oc/lab_04/report/01-report.tex
-Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on input line 3.
+Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on input line 5.
  (/usr/share/texlive/texmf-dist/tex/latex/cyrillic/koi8-r.def
 File: koi8-r.def 2014/10/28 v1.0d Input encoding file
-) (/usr/share/texlive/texmf-dist/tex/latex/cyrillic/koi8-r.def
-File: koi8-r.def 2014/10/28 v1.0d Input encoding file
-))
+)
+LaTeX Font Info:    Font shape `OML/cmr/m/n' in size <10> not available
+(Font)              Font shape `OML/cmm/m/it' tried instead on input line 13.
+LaTeX Font Info:    Font shape `OML/cmr/m/n' in size <7> not available
+(Font)              Font shape `OML/cmm/m/it' tried instead on input line 13.
+LaTeX Font Info:    Font shape `OML/cmr/m/n' in size <5> not available
+(Font)              Font shape `OML/cmm/m/it' tried instead on input line 13.
+LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 13.
+LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <7> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 13.
+LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <5> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 13.
 Package babel Info: Redefining russian shorthand "|
-(babel)             in language append on input line 25.
+(babel)             in language append on input line 51.
 Package babel Info: Redefining russian shorthand "~
-(babel)             in language append on input line 25.
+(babel)             in language append on input line 51.
 Package babel Info: Redefining russian shorthand "|
-(babel)             in language append on input line 25.
+(babel)             in language append on input line 51.
 Package babel Info: Redefining russian shorthand "~
-(babel)             in language append on input line 25.
+(babel)             in language append on input line 51.
  [2
 
 
 ]
+<img/1.png, id=94, 605.26125pt x 112.42pt>
+File: img/1.png Graphic file (type png)
+<use img/1.png>
+Package pdftex.def Info: img/1.png  used on input line 57.
+(pdftex.def)             Requested size: 364.19667pt x 67.64464pt.
+ (/usr/share/texlive/texmf-dist/tex/latex/cyrillic/koi8-r.def
+File: koi8-r.def 2014/10/28 v1.0d Input encoding file
+)
+Package babel Info: Redefining russian shorthand "|
+(babel)             in language append on input line 94.
+Package babel Info: Redefining russian shorthand "~
+(babel)             in language append on input line 94.
+Package babel Info: Redefining russian shorthand "|
+(babel)             in language append on input line 94.
+Package babel Info: Redefining russian shorthand "~
+(babel)             in language append on input line 94.
+ [3 </home/lis/university/github/oc/lab_04/report/img/1.png>]
+Package babel Info: Redefining russian shorthand "|
+(babel)             in language append on input line 137.
+Package babel Info: Redefining russian shorthand "~
+(babel)             in language append on input line 137.
+Package babel Info: Redefining russian shorthand "|
+(babel)             in language append on input line 137.
+Package babel Info: Redefining russian shorthand "~
+(babel)             in language append on input line 137.
+ [4]
+<img/2.png, id=186, 602.25pt x 252.945pt>
+File: img/2.png Graphic file (type png)
+<use img/2.png>
+Package pdftex.def Info: img/2.png  used on input line 154.
+(pdftex.def)             Requested size: 364.19667pt x 152.9685pt.
+)
+Package babel Info: Redefining russian shorthand "|
+(babel)             in language append on input line 25.
+Package babel Info: Redefining russian shorthand "~
+(babel)             in language append on input line 25.
+Package babel Info: Redefining russian shorthand "|
+(babel)             in language append on input line 25.
+Package babel Info: Redefining russian shorthand "~
+(babel)             in language append on input line 25.
+ [5 </home/lis/university/github/oc/lab_04/report/img/2.png>]
 Package atveryend Info: Empty hook `BeforeClearDocument' on input line 32.
 Package atveryend Info: Empty hook `AfterLastShipout' on input line 32.
  (/home/lis/university/github/oc/lab_04/report/report.aux (/home/lis/university/github/oc/lab_04/report/00-abstract.aux) (/home/lis/university/github/oc/lab_04/report/01-report.aux))
@@ -896,18 +947,18 @@ LaTeX Warning: There were multiply-defined labels.
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 32.
  ) 
 Here is how much of TeX's memory you used:
- 26189 strings out of 492982
- 447199 string characters out of 6134897
- 489543 words of memory out of 5000000
- 29255 multiletter control sequences out of 15000+600000
- 13209 words of font info for 40 fonts, out of 8000000 for 9000
+ 26381 strings out of 492982
+ 449859 string characters out of 6134897
+ 575543 words of memory out of 5000000
+ 29286 multiletter control sequences out of 15000+600000
+ 15508 words of font info for 50 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 59i,11n,84p,498b,1435s stack positions out of 5000i,500n,10000p,200000b,80000s
-{/usr/share/texmf/fonts/enc/dvips/cm-super/cm-super-t2a.enc}</usr/share/texmf/fonts/type1/public/cm-super/sfbx1200.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm1200.pfb>
-Output written on /home/lis/university/github/oc/lab_04/report/report.pdf (2 pages, 84316 bytes).
+ 59i,11n,84p,531b,2322s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/share/texmf/fonts/enc/dvips/cm-super/cm-super-t2a.enc}</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx1200.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm1200.pfb>
+Output written on /home/lis/university/github/oc/lab_04/report/report.pdf (5 pages, 176752 bytes).
 PDF statistics:
- 65 PDF objects out of 1000 (max. 8388607)
- 35 compressed objects within 1 object stream
- 5 named destinations out of 1000 (max. 500000)
- 134 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 252 PDF objects out of 1000 (max. 8388607)
+ 212 compressed objects within 3 object streams
+ 144 named destinations out of 1000 (max. 500000)
+ 144 words of extra memory for PDF output out of 10000 (max. 10000000)
 
