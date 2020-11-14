@@ -19,9 +19,6 @@
 #define ERROR_PIPE -1
 #define LEN 32
 
-// TODO: Изменить ход программы.
-// Глобальная переменная и тд.
-
 _Bool flag = false;
 
 void check_status(int status);

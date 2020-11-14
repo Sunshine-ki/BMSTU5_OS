@@ -12,9 +12,6 @@
 #define ERROR_PIPE -1
 #define LEN 32
 
-// TODO: Один неименнованный канал и оба child'а пишут в этот канал.
-// Это копипаст 2 лабы (нужен анализ причин завершения программы).
-
 void check_status(int status);
 
 int main()
