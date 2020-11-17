@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <signal.h>
+#include <stdbool.h> // bool.
 #include <string.h>
 
 #define OK 0
@@ -15,14 +17,24 @@
 #define FIRST_TEXT "First child write\n"
 #define SECOND_TEXT "Second child write\n"
 
+_Bool flag = false;
+
 void check_status(int status);
+
+void catch_sig(int sig_numb)
+{
+	flag = true;
+	printf("catch_sig: %d\n", sig_numb);
+}
 
 int main()
 {
 	int childpid_1, childpid_2;
 	int fd[2];
-	// 0 - выход для чтения.
-	// 1 - выход для записи.
+
+	signal(SIGINT, catch_sig);
+	printf("Parent: нажмите \"CTRL+C\", если хотите получить сообщение.\n\n");
+	sleep(2);
 
 	if (pipe(fd) == ERROR_PIPE)
 	{
@@ -36,7 +48,7 @@ int main()
 		perror("Can\'t fork.\n");
 		return ERROR;
 	}
-	else if (!childpid_1) // Это процесс потомок.
+	else if (!childpid_1 && flag) // Это процесс потомок.
 	{
 		close(fd[0]);
 		write(fd[1], FIRST_TEXT, strlen(FIRST_TEXT) + 1);
@@ -49,7 +61,7 @@ int main()
 		perror("Can\'t fork.\n");
 		return ERROR;
 	}
-	else if (!childpid_2) // Это процесс потомок.
+	else if (!childpid_2 && flag) // Это процесс потомок.
 	{
 		close(fd[0]);
 		write(fd[1], SECOND_TEXT, strlen(SECOND_TEXT) + 1);
@@ -64,8 +76,12 @@ int main()
 
 		close(fd[1]);
 
-		read(fd[0], text, LEN);
+		int a = read(fd[0], text, LEN);
+		if (!a)
+			return OK;
 		read(fd[0], text2, LEN);
+
+		printf("A: %d\n", a);
 
 		printf("Text: %s\n", text);
 		printf("Text: %s\n", text2);

@@ -14,13 +14,18 @@
 #include <stdbool.h> // bool.
 #include <string.h>
 
+// Colors.
+#define green() printf("\33[32m")
+#define yellow() printf("\33[33m")
+#define blue() printf("\33[34m")
+
 #define OK 0
 #define ERROR 1
 #define ERROR_FORK -1
 #define ERROR_PIPE -1
 #define LEN 32
-#define FIRST_TEXT "First child write\n"
-#define SECOND_TEXT "Second child write\n"
+#define FIRST_TEXT "Hi! I am first child!\n"
+#define SECOND_TEXT "Hello! I am second child!\n"
 
 _Bool flag = false;
 
@@ -38,8 +43,6 @@ int main()
 
 	int childpid_1, childpid_2;
 	int fd[2];
-	// 0 - выход для чтения.
-	// 1 - выход для записи.
 
 	if (pipe(fd) == ERROR_PIPE)
 	{
@@ -73,59 +76,33 @@ int main()
 		exit(OK);
 	}
 
-	char text[LEN], text2[LEN];
-	pid_t child_pid;
-	int status;
+	if (childpid_1 && childpid_2)
+	{
+		char text[LEN], text2[LEN];
+		pid_t child_pid;
+		int status;
 
-	printf("Parent: press CTRL+C (within 3 seconds)\n");
-	sleep(3);
+		close(fd[1]);
 
-	close(fd[1]);
+		read(fd[0], text, LEN);
+		read(fd[0], text2, LEN);
 
-	read(fd[0], text, LEN);
-	read(fd[0], text2, LEN);
+		yellow();
+		printf("Parent: нажмите \"CTRL+C\", если хотите увидеть сообщение от 2 потомка.\n\
+Иначе уведите сообщение от 1 потомка.\n\n");
+		sleep(2);
 
-	printf("Text: %s\n", text);
-	printf("Text: %s\n", text2);
-
-	child_pid = wait(&status);
-	check_status(status);
-
-	child_pid = wait(&status);
-	check_status(status);
-
-	if (flag)
-		printf("Вы хотели завершить программу...\n");
-	else
-		printf("Завершение программы.\n");
+		if (flag)
+		{
+			green();
+			printf("Text: %s\n", text2);
+		}
+		else
+		{
+			blue();
+			printf("Text: %s\n", text);
+		}
+	}
 
 	return OK;
-}
-
-void check_status(int status)
-{
-	if (WIFEXITED(status))
-	{
-		printf("Дочерний процесс завершен нормально.\n\n");
-		return;
-	}
-
-	if (WEXITSTATUS(status))
-	{
-		printf("Код завершения дочернего процесса %d.\n", WIFEXITED(status));
-		return;
-	}
-
-	if (WIFSIGNALED(status))
-	{
-		printf("Дочерний процесс завершается неперехватываемым сигналом.\n");
-		printf("Номер сигнала %d.\n", WTERMSIG(status));
-		return;
-	}
-
-	if (WIFSTOPPED(status))
-	{
-		printf("Дочерний процесс остановился.\n");
-		printf("Номер сигнала %d.", WSTOPSIG(status));
-	}
 }

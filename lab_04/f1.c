@@ -29,8 +29,8 @@ int main()
 	else if (!childpid_1)
 	{
 		// Это процесс потомок.
-		printf("First child: id: %d ppid: %d  pgrp: %d\n", getpid(), getppid(), getpgrp());
 		sleep(SLEEP_TIME);
+		printf("First child: id: %d ppid: %d  pgrp: %d\n", getpid(), getppid(), getpgrp());
 		exit(OK);
 	}
 
@@ -43,8 +43,8 @@ int main()
 	else if (!childpid_2)
 	{
 		// Это процесс потомок.
-		printf("Second child: id: %d ppid: %d  pgrp: %d\n", getpid(), getppid(), getpgrp());
 		sleep(SLEEP_TIME);
+		printf("Second child: id: %d ppid: %d  pgrp: %d\n", getpid(), getppid(), getpgrp());
 		exit(OK);
 	}
 
