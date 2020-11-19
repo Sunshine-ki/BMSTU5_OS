@@ -77,14 +77,14 @@ int main()
 		close(fd[1]);
 
 		int a = read(fd[0], text, LEN);
-		if (!a)
-			return OK;
-		read(fd[0], text2, LEN);
 
-		printf("A: %d\n", a);
+		if (a)
+		{
+			read(fd[0], text2, LEN);
 
-		printf("Text: %s\n", text);
-		printf("Text: %s\n", text2);
+			printf("Text: %s\n", text);
+			printf("Text: %s\n", text2);
+		}
 
 		child_pid = wait(&status);
 		check_status(status);

@@ -218,7 +218,7 @@ int main()
 	{
 		// Это процесс потомок.
 		printf("Second child: id: %d ppid: %d  pgrp: %d\n", getpid(), getppid(), getpgrp());
-		if (execlp("cat", "cat", "text2.txt", NULL) == ERROR_EXEC)
+		if (execlp("echo", "echo", "Hello", "world!\n", NULL) == ERROR_EXEC)
 		{
 			perror("Second child can\'t exec");
 			exit(ERROR);
@@ -397,18 +397,13 @@ void check_status(int status)
 #include <stdbool.h> // bool.
 #include <string.h>
 
-// Colors.
-#define green() printf("\33[32m")
-#define yellow() printf("\33[33m")
-#define blue() printf("\33[34m")
-
 #define OK 0
 #define ERROR 1
 #define ERROR_FORK -1
 #define ERROR_PIPE -1
 #define LEN 32
-#define FIRST_TEXT "Hi! I am first child!\n"
-#define SECOND_TEXT "Hello! I am second child!\n"
+#define FIRST_TEXT "First child write\n"
+#define SECOND_TEXT "Second child write\n"
 
 _Bool flag = false;
 
@@ -422,10 +417,12 @@ void catch_sig(int sig_numb)
 
 int main()
 {
-	signal(SIGINT, catch_sig);
-
 	int childpid_1, childpid_2;
 	int fd[2];
+
+	signal(SIGINT, catch_sig);
+	printf("Parent: нажмите \"CTRL+C\", если хотите получить сообщение.\n\n");
+	sleep(2);
 
 	if (pipe(fd) == ERROR_PIPE)
 	{
@@ -439,7 +436,7 @@ int main()
 		perror("Can\'t fork.\n");
 		return ERROR;
 	}
-	else if (!childpid_1) // Это процесс потомок.
+	else if (!childpid_1 && flag) // Это процесс потомок.
 	{
 		close(fd[0]);
 		write(fd[1], FIRST_TEXT, strlen(FIRST_TEXT) + 1);
@@ -452,7 +449,7 @@ int main()
 		perror("Can\'t fork.\n");
 		return ERROR;
 	}
-	else if (!childpid_2) // Это процесс потомок.
+	else if (!childpid_2 && flag) // Это процесс потомок.
 	{
 		close(fd[0]);
 		write(fd[1], SECOND_TEXT, strlen(SECOND_TEXT) + 1);
@@ -467,27 +464,52 @@ int main()
 
 		close(fd[1]);
 
-		read(fd[0], text, LEN);
-		read(fd[0], text2, LEN);
+		int a = read(fd[0], text, LEN);
 
-		yellow();
-		printf("Parent: нажмите \"CTRL+C\", если хотите увидеть сообщение от 2 потомка.\n\
-Иначе уведите сообщение от 1 потомка.\n\n");
-		sleep(2);
-
-		if (flag)
+		if (a)
 		{
-			green();
+			read(fd[0], text2, LEN);
+
+			printf("Text: %s\n", text);
 			printf("Text: %s\n", text2);
 		}
-		else
-		{
-			blue();
-			printf("Text: %s\n", text);
-		}
+
+		child_pid = wait(&status);
+		check_status(status);
+
+		child_pid = wait(&status);
+		check_status(status);
 	}
 
 	return OK;
+}
+
+void check_status(int status)
+{
+	if (WIFEXITED(status))
+	{
+		printf("Дочерний процесс завершен нормально.\n\n");
+		return;
+	}
+
+	if (WEXITSTATUS(status))
+	{
+		printf("Код завершения дочернего процесса %d.\n", WIFEXITED(status));
+		return;
+	}
+
+	if (WIFSIGNALED(status))
+	{
+		printf("Дочерний процесс завершается неперехватываемым сигналом.\n");
+		printf("Номер сигнала %d.\n", WTERMSIG(status));
+		return;
+	}
+
+	if (WIFSTOPPED(status))
+	{
+		printf("Дочерний процесс остановился.\n");
+		printf("Номер сигнала %d.", WSTOPSIG(status));
+	}
 }
 \end{lstlisting}
 

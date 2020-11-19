@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2020.7.8)  17 NOV 2020 10:18
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2020.7.8)  18 NOV 2020 19:38
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -952,28 +952,28 @@ Package babel Info: Redefining russian shorthand "~
 (babel)             in language append on input line 180.
  [5 </home/lis/university/github/oc/lab_04/report/img/2.png>]
 Package babel Info: Redefining russian shorthand "|
-(babel)             in language append on input line 225.
+(babel)             in language append on input line 224.
 Package babel Info: Redefining russian shorthand "~
-(babel)             in language append on input line 225.
+(babel)             in language append on input line 224.
 Package babel Info: Redefining russian shorthand "|
-(babel)             in language append on input line 225.
+(babel)             in language append on input line 224.
 Package babel Info: Redefining russian shorthand "~
-(babel)             in language append on input line 225.
+(babel)             in language append on input line 224.
  [6]
 Package babel Info: Redefining russian shorthand "|
-(babel)             in language append on input line 269.
+(babel)             in language append on input line 268.
 Package babel Info: Redefining russian shorthand "~
-(babel)             in language append on input line 269.
+(babel)             in language append on input line 268.
 Package babel Info: Redefining russian shorthand "|
-(babel)             in language append on input line 269.
+(babel)             in language append on input line 268.
 Package babel Info: Redefining russian shorthand "~
-(babel)             in language append on input line 269.
+(babel)             in language append on input line 268.
  [7]
-<img/3.png, id=319, 596.2275pt x 295.1025pt>
+<img/3.png, id=318, 556.0775pt x 234.8775pt>
 File: img/3.png Graphic file (type png)
 <use img/3.png>
 Package pdftex.def Info: img/3.png  used on input line 274.
-(pdftex.def)             Requested size: 364.19667pt x 180.2599pt.
+(pdftex.def)             Requested size: 364.19667pt x 153.83334pt.
 Package babel Info: Redefining russian shorthand "|
 (babel)             in language append on input line 278.
 Package babel Info: Redefining russian shorthand "~
@@ -1014,38 +1014,38 @@ Package pdftex.def Info: img/4.png  used on input line 387.
 File: koi8-r.def 2014/10/28 v1.0d Input encoding file
 )
 Package babel Info: Redefining russian shorthand "|
-(babel)             in language append on input line 411.
+(babel)             in language append on input line 412.
 Package babel Info: Redefining russian shorthand "~
-(babel)             in language append on input line 411.
+(babel)             in language append on input line 412.
 Package babel Info: Redefining russian shorthand "|
-(babel)             in language append on input line 411.
+(babel)             in language append on input line 412.
 Package babel Info: Redefining russian shorthand "~
-(babel)             in language append on input line 411.
+(babel)             in language append on input line 412.
  [11 </home/lis/university/github/oc/lab_04/report/img/4.png>]
 Package babel Info: Redefining russian shorthand "|
-(babel)             in language append on input line 457.
+(babel)             in language append on input line 456.
 Package babel Info: Redefining russian shorthand "~
-(babel)             in language append on input line 457.
+(babel)             in language append on input line 456.
 Package babel Info: Redefining russian shorthand "|
-(babel)             in language append on input line 457.
+(babel)             in language append on input line 456.
 Package babel Info: Redefining russian shorthand "~
-(babel)             in language append on input line 457.
+(babel)             in language append on input line 456.
  [12]
-<img/5.png, id=515, 684.5575pt x 249.93375pt>
+Package babel Info: Redefining russian shorthand "|
+(babel)             in language append on input line 502.
+Package babel Info: Redefining russian shorthand "~
+(babel)             in language append on input line 502.
+Package babel Info: Redefining russian shorthand "|
+(babel)             in language append on input line 502.
+Package babel Info: Redefining russian shorthand "~
+(babel)             in language append on input line 502.
+ [13]
+<img/5.png, id=566, 525.965pt x 329.23pt>
 File: img/5.png Graphic file (type png)
 <use img/5.png>
-Package pdftex.def Info: img/5.png  used on input line 497.
-(pdftex.def)             Requested size: 364.19667pt x 132.97147pt.
+Package pdftex.def Info: img/5.png  used on input line 519.
+(pdftex.def)             Requested size: 364.19667pt x 227.97774pt.
 )
-Package babel Info: Redefining russian shorthand "|
-(babel)             in language append on input line 25.
-Package babel Info: Redefining russian shorthand "~
-(babel)             in language append on input line 25.
-Package babel Info: Redefining russian shorthand "|
-(babel)             in language append on input line 25.
-Package babel Info: Redefining russian shorthand "~
-(babel)             in language append on input line 25.
- [13]
 Package babel Info: Redefining russian shorthand "|
 (babel)             in language append on input line 25.
 Package babel Info: Redefining russian shorthand "~
@@ -1072,18 +1072,18 @@ LaTeX Warning: There were multiply-defined labels.
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 32.
  ) 
 Here is how much of TeX's memory you used:
- 26727 strings out of 492982
- 454872 string characters out of 6134897
+ 26749 strings out of 492982
+ 455202 string characters out of 6134897
  601543 words of memory out of 5000000
  29306 multiletter control sequences out of 15000+600000
  15508 words of font info for 50 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  59i,11n,84p,719b,2322s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texmf/fonts/enc/dvips/cm-super/cm-super-t2a.enc}</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx1200.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm1200.pfb>
-Output written on /home/lis/university/github/oc/lab_04/report/report.pdf (14 pages, 330120 bytes).
+Output written on /home/lis/university/github/oc/lab_04/report/report.pdf (14 pages, 322027 bytes).
 PDF statistics:
- 676 PDF objects out of 1000 (max. 8388607)
- 613 compressed objects within 7 object streams
- 459 named destinations out of 1000 (max. 500000)
+ 703 PDF objects out of 1000 (max. 8388607)
+ 640 compressed objects within 7 object streams
+ 481 named destinations out of 1000 (max. 500000)
  169 words of extra memory for PDF output out of 10000 (max. 10000000)
 

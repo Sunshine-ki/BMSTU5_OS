@@ -59,8 +59,8 @@ int main()
 	else if (!childpid_2)
 	{
 		// Это процесс потомок.
-		printf("Second child: id: %d ppid: %d  pgrp: %d\n", getpid(), getppid(), getpgrp());
-		if (execlp("cat", "cat", "text2.txt", NULL) == ERROR_EXEC)
+		printf("Second child: id: %d ppid: %d  pgrp: %d\n\n", getpid(), getppid(), getpgrp());
+		if (execlp("echo", "echo", "Hello", "world!\n", NULL) == ERROR_EXEC)
 		{
 			perror("Second child can\'t exec");
 			exit(ERROR);
@@ -69,11 +69,11 @@ int main()
 	}
 
 	child_pid = wait(&status);
-	printf("status: %d, child_pid: %d\n", status, child_pid);
+	// printf("status: %d, child_pid: %d\n", status, child_pid);
 	check_status(status);
 
 	child_pid = wait(&status);
-	printf("status: %d, child_pid: %d\n", status, child_pid);
+	// printf("status: %d, child_pid: %d\n", status, child_pid);
 	check_status(status);
 
 	printf("Parent: id: %d pgrp: %d child1: %d child2: %d\n", getpid(), getpgrp(), childpid_1, childpid_2);
