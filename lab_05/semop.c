@@ -14,16 +14,16 @@ struct sembuf sem_arr2[1] = {{0, 1, 1}};
 
 int main(void)
 {
-	int semDescr;
+	int isemDescr;
 
 	int perms = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
 	// IPC_PRIVATE - ключ, который показывает, что
 	// Набор семафоров могут использовать только процессы,
 	// Порожденные процессом, создавшим семафор.
 	// Создаем новый набор 3 семафоров.
-	semDescr = semget(IPC_PRIVATE, 2, IPC_CREAT | perms);
+	isemDescr = semget(IPC_PRIVATE, 2, IPC_CREAT | perms);
 
-	if (semDescr == -1)
+	if (isemDescr == -1)
 	{
 		perror("Ошибка при создании набора семафоров.");
 		return -1;
@@ -41,7 +41,7 @@ int main(void)
 		printf("Child begin\n");
 
 		// Это процесс потомок.
-		int rv = semop(semDescr, sem_arr, 1);
+		int rv = semop(isemDescr, sem_arr, 1);
 
 		printf("Return value = %d\n", rv);
 
@@ -59,7 +59,7 @@ int main(void)
 
 	sleep(1);
 
-	if (semop(semDescr, sem_arr2, 1) == -1)
+	if (semop(isemDescr, sem_arr2, 1) == -1)
 	{
 		perror("Error semop");
 		return 1;

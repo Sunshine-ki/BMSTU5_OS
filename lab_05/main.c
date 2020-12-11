@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <unistd.h>
+#include <sys/wait.h>
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/sem.h>
@@ -24,7 +25,7 @@
 #define ERROR_SEMOP -1
 #define ERROR_SEMGET -1
 
-#define N 10
+#define N 32
 
 #define OK 0
 
@@ -44,8 +45,9 @@
 #define SEM_FLG 0 // TODO: OR (SEM_UNDO | IPC_NOWAIT) ?
 
 struct sembuf InitValue[2] = {
-	{SB, 1, SEM_FLG},  // SB изначально установлен в 1.
-	{SF, N, SEM_FLG}}; // SF изначально равно N.
+	{SB, 1, SEM_FLG}, // SB изначально установлен в 1.
+	{SE, N, SEM_FLG}  // SE изначально равно N.
+};
 
 // Производитель.
 struct sembuf ProducerBegin[2] = {
@@ -68,7 +70,7 @@ struct sembuf ConsumerEnd[2] = {
 	{SE, V, SEM_FLG}  // Увеличивает кол-во пустых ячеек.
 };
 
-void Producer(const int semId, const int value, const int producerId)
+void ProducerRunning(const int semId, const int producerId, const char value)
 {
 	int rv; // rv = return value
 
@@ -77,7 +79,7 @@ void Producer(const int semId, const int value, const int producerId)
 	// sleep(delay);
 
 	// Получаем доступ к критической зоне.
-	rv = semop(semId, ConsumerBegin, 2);
+	rv = semop(semId, ProducerBegin, 2);
 	if (rv == ERROR_SEMOP)
 	{
 		perror("Произведитель не может изменить значение семафора.\n");
@@ -85,8 +87,9 @@ void Producer(const int semId, const int value, const int producerId)
 	}
 
 	// TODO: Положить в буфер.
+	printf("Producer: %c", value);
 
-	rv = semop(semId, ConsumerEnd, 2);
+	rv = semop(semId, ProducerEnd, 2);
 	if (rv == ERROR_SEMOP)
 	{
 		perror("Произведитель не может изменить значение семафора.\n");
@@ -94,7 +97,7 @@ void Producer(const int semId, const int value, const int producerId)
 	}
 }
 
-void CreateProducer(const int id, const int semId, int value)
+void CreateProducer(const int producerId, const int semId, char value)
 {
 	pid_t childpid;
 	if ((childpid = fork()) == ERROR_FORK)
@@ -107,7 +110,7 @@ void CreateProducer(const int id, const int semId, int value)
 	{
 		// Это процесс потомок.
 		// TODO: Тут цикл работы производителей.
-		Producer(semId, value, id);
+		ProducerRunning(semId, producerId, value);
 
 		exit(OK);
 	}
@@ -126,7 +129,7 @@ int main(void)
 	// IPC_PRIVATE - ключ, который показывает, что
 	// Набор семафоров могут использовать только процессы,
 	// Порожденные процессом, создавшим семафор.
-	// Создаем новый набор 3 семафоров.
+	// Создаем новый набор, состоящий из 3 семафоров.
 	semDescr = semget(IPC_PRIVATE, SEM_COUNT, IPC_CREAT | perms);
 
 	if (semDescr == ERROR_SEMGET)
@@ -135,15 +138,19 @@ int main(void)
 		return ERROR;
 	}
 
-	// Задаем начальные значения.
-	semop(semDescr, InitValue, 2);
-
-	if (semop(isem_descr, sem_arr, 2) == -1)
+	// Задаем начальные значения семафоров.
+	if (semop(semDescr, InitValue, 2))
 	{
-		perror("Nas");
-		return 1;
+		perror("Ошибка при попытке изменить семафор.");
+		return ERROR;
 	}
-	printf("Ok\n");
 
+	char c = 'G';
+	CreateProducer(0, semDescr, c);
+
+	int status;
+	wait(&status);
+
+	printf("Ok\n");
 	return OK;
 }
