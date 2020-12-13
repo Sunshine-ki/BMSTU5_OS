@@ -12,11 +12,11 @@
 #include "writer.h"
 #include "reader.h"
 
-int *counter = NULL;
-
 // struct sembuf InitValue[1] = {
-// 	{CW, 0, SEM_FLG} // Изначально CW равно 1.
+// 	{CW, 1, SEM_FLG} // Изначально CW равно 1.
 // };
+
+int *counter = NULL;
 
 int main(void)
 {
@@ -40,7 +40,7 @@ int main(void)
 		return ERROR;
 	}
 
-	*(counter) = 0;
+	*counter = 0;
 
 	// Создаем новый набор, состоящий из SEM_COUNT семафоров.
 	semDescr = semget(IPC_PRIVATE, SEM_COUNT, IPC_CREAT | perms);
