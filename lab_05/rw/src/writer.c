@@ -6,24 +6,27 @@
 #include "constants.h"
 #include "writer.h"
 
-struct sembuf StartWrite[5] = {
+struct sembuf StartWrite[6] = {
 	{WW, V, SEM_FLG}, // Увеличивает кол-во ожидающий писателей.
 	{R, S, SEM_FLG},  // Ждет, пока все читатели дочитают.
-	{CW, P, SEM_FLG}, // Ждет, пока писатель допишет.
+	// {CW, P, SEM_FLG}, // Ждет, пока писатель допишет.
+	{CW, S, SEM_FLG}, // Ждет, пока что другой писатель допишет.
+	{CW, V, SEM_FLG}, // Запрещает писать.
 	{CR, V, SEM_FLG}, // Запрещает читать.
 	{WW, P, SEM_FLG}  // Уменьшает кол-во ожидающий писателей. Т.к. он уже не ждет, а пишет
 };
 
 struct sembuf StopWrite[2] = {
 	{CR, P, SEM_FLG}, // Разрешает читать
-	{CW, V, SEM_FLG}  // Разрешает писать.
+	// {CW, V, SEM_FLG}  // Разрешает писать.
+	{CW, P, SEM_FLG} // Разрешает писать.
 };
 
 extern int *counter;
 
 void Writer(const int semId, const int writerId)
 {
-	int rv = semop(semId, StartWrite, 5); // rv = return value
+	int rv = semop(semId, StartWrite, 6); // rv = return value
 	if (rv == ERROR_SEMOP)
 	{
 		perror("Писатель не может изменить значение семафора.\n");

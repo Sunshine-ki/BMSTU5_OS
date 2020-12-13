@@ -14,9 +14,9 @@
 
 int *counter = NULL;
 
-struct sembuf InitValue[1] = {
-	{CW, 1, SEM_FLG} // Изначально CW равно 1.
-};
+// struct sembuf InitValue[1] = {
+// 	{CW, 0, SEM_FLG} // Изначально CW равно 1.
+// };
 
 int main(void)
 {
@@ -51,22 +51,18 @@ int main(void)
 		return ERROR;
 	}
 
-	// Задаем начальные значения семафоров.
-	if (semop(semDescr, InitValue, 1))
-	{
-		perror("Ошибка при попытке изменить семафор.");
-		return ERROR;
-	}
+	// // Задаем начальные значения семафоров.
+	// if (semop(semDescr, InitValue, 1))
+	// {
+	// 	perror("Ошибка при попытке изменить семафор.");
+	// 	return ERROR;
+	// }
 
 	for (int i = 0; i < NUMBER_READERS; i++)
-	{
-		CreateReader(semDescr, i);
-	}
+		CreateReader(semDescr, i + 1);
 
 	for (int i = 0; i < NUMBER_WRITERS; i++)
-	{
-		CreateWriter(semDescr, i);
-	}
+		CreateWriter(semDescr, i + 1);
 
 	for (int i = 0; i < NUMBER_READERS + NUMBER_WRITERS; i++)
 		wait(&status);
