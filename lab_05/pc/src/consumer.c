@@ -3,6 +3,10 @@
 #include <sys/sem.h>
 
 #include "consumer.h"
+#include "buffer.h"
+
+extern int *consumer_pos;
+extern char *buffer;
 
 // Потребитель.
 struct sembuf ConsumerBegin[2] = {
@@ -15,26 +19,23 @@ struct sembuf ConsumerEnd[2] = {
 	{SE, V, SEM_FLG}  // Увеличивает кол-во пустых ячеек.
 };
 
-void ConsumerRunning(const int semId, const int consumerId)
+void ConsumerRunning(const int semId, const int consumerId, Delay *delays)
 {
-	int rv; // rv = return value
-
 	// Создаем случайные задержки.
-	int delay = rand() % DELAY_TIME;
-	// sleep(delay);
+	sleep(getDelay(delays));
+	// printf("%s Задержка потребителя: %d\n", RED, getDelay(delays));
 
 	// Получаем доступ к критической зоне.
-	rv = semop(semId, ConsumerBegin, 2);
+	int rv = semop(semId, ConsumerBegin, 2); // rv = return value
 	if (rv == ERROR_SEMOP)
 	{
 		perror("Потребитель не может изменить значение семафора.\n");
 		exit(ERROR);
 	}
 
-	// TODO: Получить из буфер.
-	// printf("Потребитель в критической зоне. Получил из буфера.\n");
-
-	// printf("Consumer: %c\n", value);
+	// Получить из буфера.
+	printf("%sПотребитель %d в критической зоне. Получил из буфера: %s%c\n", BLUE, consumerId, GREEN, buffer[*consumer_pos]);
+	(*consumer_pos)++;
 
 	rv = semop(semId, ConsumerEnd, 2);
 	if (rv == ERROR_SEMOP)
@@ -42,9 +43,11 @@ void ConsumerRunning(const int semId, const int consumerId)
 		perror("Потребитель не может изменить значение семафора.\n");
 		exit(ERROR);
 	}
+
+	puts("");
 }
 
-void CreateConsumer(const int consumerId, const int semId)
+void CreateConsumer(const int consumerId, const int semId, Delay *delays)
 {
 	pid_t childpid;
 	if ((childpid = fork()) == ERROR_FORK)
@@ -55,11 +58,12 @@ void CreateConsumer(const int consumerId, const int semId)
 	}
 	else if (!childpid) // childpid == 0
 	{
-		// printf("%sВремя задержки потребителя: %ld\n", YELLOW, time(NULL));
-
 		// Это процесс потомок.
-		// TODO: Тут цикл работы потребителей.
-		ConsumerRunning(semId, consumerId);
+
+		// Каждый потребитель потребляет
+		// NUMBER_OF_WORKS товаров.
+		for (int i = 0; i < NUMBER_OF_WORKS; i++)
+			ConsumerRunning(semId, consumerId, delays);
 
 		exit(OK);
 	}

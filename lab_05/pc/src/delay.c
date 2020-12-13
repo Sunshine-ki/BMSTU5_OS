@@ -1,8 +1,8 @@
-#include "delay.h"
-
 #include <stdlib.h> // rand()
+#include <stdio.h>
 
 #include "constants.h"
+#include "delay.h"
 
 Delay *CreateRandomDelays(int const count)
 {
@@ -11,10 +11,15 @@ Delay *CreateRandomDelays(int const count)
 	delay->delays = malloc(sizeof(int) * count);
 	delay->count = count - 1;
 
-	for (int i = 0; i < delay->count; i++)
-		delay->delays[i] = rand() % DELAY_TIME;
+	UpdateDelays(delay);
 
 	return delay;
+}
+
+void UpdateDelays(Delay *delay)
+{
+	for (int i = 0; i < delay->count; i++)
+		delay->delays[i] = rand() % DELAY_TIME;
 }
 
 int getDelay(Delay *delay)

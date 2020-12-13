@@ -3,6 +3,10 @@
 #include <sys/sem.h>
 
 #include "producer.h"
+#include "buffer.h"
+
+extern int *producer_pos;
+extern char *buffer;
 
 // Производитель.
 struct sembuf ProducerBegin[2] = {
@@ -14,23 +18,25 @@ struct sembuf ProducerEnd[2] = {
 	{SF, V, SEM_FLG}  // Увеличивает кол-во заполненных ячеек.
 };
 
-void ProducerRunning(const int semId, const int producerId, const char value)
+void ProducerRunning(const int semId, const int producerId, Delay *delays)
 {
-	int rv; // rv = return value
-
 	// Создаем случайные задержки.
+	sleep(getDelay(delays));
+	// printf("%s Задержка потребителя: %d\n", RED, getDelay(delays));
 
 	// Получаем доступ к критической зоне.
-	rv = semop(semId, ProducerBegin, 2);
+	int rv = semop(semId, ProducerBegin, 2); // rv = return value
 	if (rv == ERROR_SEMOP)
 	{
 		perror("Произведитель не может изменить значение семафора.\n");
 		exit(ERROR);
 	}
 
-	// TODO: Положить в буфер.
-	// printf("Производитель в критической зоне. Положил в буфер. ");
-	// printf("Производитель: %c\n", value);
+	// Положить в буфер.
+	printf("%sПроизводитель %d в критической зоне. Положил в буфер. \n", YELLOW, producerId);
+
+	buffer[(*producer_pos)++] = ALPHABET[*producer_pos];
+	BufferState();
 
 	rv = semop(semId, ProducerEnd, 2);
 	if (rv == ERROR_SEMOP)
@@ -38,9 +44,10 @@ void ProducerRunning(const int semId, const int producerId, const char value)
 		perror("Произведитель не может изменить значение семафора.\n");
 		exit(ERROR);
 	}
+	puts("");
 }
 
-void CreateProducer(const int producerId, const int semId, char value)
+void CreateProducer(const int producerId, const int semId, Delay *delays)
 {
 	pid_t childpid;
 	if ((childpid = fork()) == ERROR_FORK)
@@ -51,11 +58,12 @@ void CreateProducer(const int producerId, const int semId, char value)
 	}
 	else if (!childpid) // childpid == 0
 	{
-		// printf("%sВремя задержки производителя: %ld\n", GREEN, time(NULL));
-
 		// Это процесс потомок.
-		// TODO: Тут цикл работы производителей.
-		ProducerRunning(semId, producerId, value);
+
+		// Каждый производитель производит
+		// NUMBER_OF_WORKS товаров.
+		for (int i = 0; i < NUMBER_OF_WORKS; i++)
+			ProducerRunning(semId, producerId, delays);
 
 		exit(OK);
 	}

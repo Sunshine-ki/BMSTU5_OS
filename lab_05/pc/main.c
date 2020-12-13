@@ -5,22 +5,25 @@
 #include <sys/wait.h>
 #include <sys/sem.h>
 #include <sys/stat.h>
+#include <sys/shm.h>
 
 #include "constants.h"
 
-#include "delay.h"
 #include "consumer.h"
 #include "producer.h"
+#include "delay.h"
+#include "buffer.h"
 
 struct sembuf InitValue[2] = {
 	{SB, 1, SEM_FLG}, // SB изначально установлен в 1.
 	{SE, N, SEM_FLG}  // SE изначально равно N.
 };
 
-int *memory_addr;
-int *consumer_pos;
-int *producer_pos;
-char *buffer;
+int *consumer_pos = NULL;
+int *producer_pos = NULL;
+char *buffer = NULL;
+
+const int shm_size = 2 * sizeof(int) + N * sizeof(char);
 
 int main(void)
 {
@@ -28,11 +31,48 @@ int main(void)
 	srand(time(NULL));
 
 	int semDescr;
-
+	int status;
 	int perms = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
+	int *address = NULL;
+
+	// Создаем задержки.
+	Delay *delaysProducer = CreateRandomDelays(NUMBER_OF_WORKS);
+	Delay *delaysConsumer = CreateRandomDelays(NUMBER_OF_WORKS);
+
 	// IPC_PRIVATE - ключ, который показывает, что
 	// Набор семафоров могут использовать только процессы,
 	// Порожденные процессом, создавшим семафор.
+
+	// shmget - создает новый разделяемый сегмент.
+	int shmid = shmget(IPC_PRIVATE, shm_size, perms);
+	if (shmid == ERROR_SHMGET)
+	{
+		perror("Не удалось создать разделяемый сегмент.\n");
+		return ERROR;
+	}
+
+	// Функция shmat() возвращает указатель на сегмент
+	// shmaddr (второй аргумент) равно NULL,
+	// то система выбирает подходящий (неиспользуемый)
+	// адрес для подключения сегмента.
+	address = shmat(shmid, NULL, 0);
+	if (*(char *)address == -1)
+	{
+		perror("Не удалось получить указатель на сегмент.");
+		return ERROR;
+	}
+
+	// В начале разделяемой памяти хранится
+	// producer_pos и consumer_pos
+	// Начиная с buffer уже хранятся данные.
+	producer_pos = address;
+	(*producer_pos) = 0;
+	consumer_pos = address + sizeof(int);
+	(*consumer_pos) = 0;
+	buffer = (char *)(address + 2 * sizeof(int));
+
+	InitBuffer();
+
 	// Создаем новый набор, состоящий из 3 семафоров.
 	semDescr = semget(IPC_PRIVATE, SEM_COUNT, IPC_CREAT | perms);
 
@@ -49,31 +89,23 @@ int main(void)
 		return ERROR;
 	}
 
-	char c = 'G';
-	CreateProducer(0, semDescr, c);
-	CreateConsumer(0, semDescr);
+	for (int i = 0; i < COUNT; i++)
+	{
+		CreateProducer(i + 1, semDescr, delaysProducer);
+		CreateConsumer(i + 1, semDescr, delaysConsumer);
 
-	CreateProducer(0, semDescr, c);
-	CreateConsumer(0, semDescr);
+		// Обновляем задержки.
+		UpdateDelays(delaysProducer);
+		UpdateDelays(delaysConsumer);
+	}
 
-	CreateProducer(0, semDescr, c);
-	CreateConsumer(0, semDescr);
+	for (int i = 0; i < COUNT_PRODUCER + COUNT_CONSUMER; i++)
+		wait(&status);
 
-	int status;
-	wait(&status);
+	printf("%sOk\n", GREEN);
 
-	printf("Ok\n");
+	DestroyDelay(delaysProducer);
+	DestroyDelay(delaysConsumer);
 
 	return OK;
 }
-
-// Delay *delayProducer = CreateRandomDelays(10);
-// for (int i = 0; i < 10; i++)
-// 	printf("%d ", getDelay(delayProducer));
-
-// printf("\n");
-
-// for (int i = 0; i < 15; i++)
-// 	printf("%d ", getDelay(delayProducer));
-
-// DestroyDelay(delayProducer);

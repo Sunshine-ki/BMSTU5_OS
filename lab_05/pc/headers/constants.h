@@ -7,6 +7,9 @@
 #include <sys/sem.h>
 #include <sys/stat.h>
 
+#define ALPHABET "abcdefghijklmnopqrstuvwxyz"
+#define INIT_VALUE '0'
+
 // Colors.
 #define GREEN "\33[32m"
 #define YELLOW "\33[33m"
@@ -19,14 +22,24 @@
 #define ERROR_PIPE -1
 #define ERROR_SEMOP -1
 #define ERROR_SEMGET -1
+#define ERROR_SHMGET -1
 
-#define N 32
+// Каждый производитель производит 5 товаров.
+// Каждый потребитель потребляет 5 товаров
+#define NUMBER_OF_WORKS 5
+// В программе создается 3 производителя =>
+// 3 * 5 = 15 ячеек памяти потребуется.
+#define N 15
 
 #define OK 0
 
 #define SEM_COUNT 3
 
 #define DELAY_TIME 3 // Для задержек.
+
+#define COUNT 3
+#define COUNT_PRODUCER 3
+#define COUNT_CONSUMER 3
 
 // semaphore:
 #define SF 0 // buffer full;
@@ -37,6 +50,6 @@
 #define P -1 // Пропустить;
 #define V 1	 // Освободить.
 
-#define SEM_FLG 0 // TODO: OR (SEM_UNDO | IPC_NOWAIT) ?
+#define SEM_FLG 0
 
 #endif

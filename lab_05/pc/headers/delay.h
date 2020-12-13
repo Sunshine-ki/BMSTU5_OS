@@ -11,6 +11,8 @@ typedef struct
 
 Delay *CreateRandomDelays(int const count);
 
+void UpdateDelays(Delay *delay);
+
 int getDelay(Delay *delay);
 
 void DestroyDelay(Delay *delay);
