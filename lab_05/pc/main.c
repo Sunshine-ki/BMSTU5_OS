@@ -107,5 +107,8 @@ int main(void)
 	DestroyDelay(delaysProducer);
 	DestroyDelay(delaysConsumer);
 
+	if (shmdt(address) == -1)
+		perror("Ошибка при попытке отключить разделяемый сегмент от адресного пространства процесса.");
+
 	return OK;
 }
