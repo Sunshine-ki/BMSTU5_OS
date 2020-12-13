@@ -17,6 +17,11 @@ struct sembuf InitValue[2] = {
 	{SE, N, SEM_FLG}  // SE изначально равно N.
 };
 
+int *memory_addr;
+int *consumer_pos;
+int *producer_pos;
+char *buffer;
+
 int main(void)
 {
 	// Чтобы при повторном запуске новые рандомные сила были.
