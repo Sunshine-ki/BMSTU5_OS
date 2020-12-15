@@ -33,10 +33,10 @@ void ProducerRunning(const int semId, const int producerId, Delay *delays)
 	}
 
 	// Положить в буфер.
-	printf("%sПроизводитель %d в критической зоне. Положил в буфер. \n", YELLOW, producerId);
+	printf("%sПроизводитель %d в критической зоне. Положил в буфер: %c\n", YELLOW, producerId, ALPHABET[*producer_pos]);
 
 	buffer[(*producer_pos)++] = ALPHABET[*producer_pos];
-	BufferState();
+	// BufferState();
 
 	rv = semop(semId, ProducerEnd, 2);
 	if (rv == ERROR_SEMOP)

@@ -1,6 +1,39 @@
 
 \section{Задание 1}
 
+\textbf{Результат работы.}
+Задержки выбираются произвольным образом из приведенных ниже.
+
+Задержки потребителей: [0, 1, 2, 3]
+Задержки производителей: [0, 1]
+
+\begin{figure}[ht!]
+	\centering{
+		\includegraphics[width=0.54\textwidth]{img/res1_0.png}
+		\caption{Результат работы программы 1.} }
+\end{figure}
+
+
+Задержки потребителей: [0, 1]
+Задержки производителей: [0, 1, 2, 3] 
+
+\begin{figure}[ht!]
+	\centering{
+		\includegraphics[width=0.5\textwidth]{img/res1_1.png}
+		\caption{Результат работы программы 1.} }
+\end{figure}
+
+Задержки потребителей: [0, 1]
+Задержки производителей: [0, 1] 
+
+\begin{figure}[ht!]
+	\centering{
+		\includegraphics[width=0.5\textwidth]{img/res1_2.png}
+		\caption{Результат работы программы 1.} }
+\end{figure}
+
+\newpage
+
 \begin{lstlisting}[label=some-code,caption=Главный файл main]
 struct sembuf InitValue[2] = {
 	{SB, 1, SEM_FLG}, // SB изначально установлен в 1.
@@ -24,8 +57,8 @@ int main(void)
 	int *address = NULL;
 
 	// Создаем задержки.
-	Delay *delaysProducer = CreateRandomDelays(NUMBER_OF_WORKS);
-	Delay *delaysConsumer = CreateRandomDelays(NUMBER_OF_WORKS);
+	Delay *delaysProducer = CreateRandomDelays(NUMBER_OF_WORKS, PRODUCER_DELAY_TIME);
+	Delay *delaysConsumer = CreateRandomDelays(NUMBER_OF_WORKS, CONSUMER_DELAY_TIME);
 
 	// shmget - создает новый разделяемый сегмент.
 	int shmid = shmget(IPC_PRIVATE, shm_size, perms);
@@ -76,8 +109,8 @@ int main(void)
 		CreateConsumer(i + 1, semDescr, delaysConsumer);
 
 		// Обновляем задержки.
-		UpdateDelays(delaysProducer);
-		UpdateDelays(delaysConsumer);
+		UpdateDelays(delaysProducer, PRODUCER_DELAY_TIME);
+		UpdateDelays(delaysConsumer, CONSUMER_DELAY_TIME);
 	}
 
 	for (int i = 0; i < COUNT_PRODUCER + COUNT_CONSUMER; i++)
@@ -93,29 +126,10 @@ int main(void)
 
 	return OK;
 }
-
-\end{lstlisting}
-
-\begin{lstlisting}[label=some-code,caption=Файл\, для работы с буфером]
-extern char *buffer;
-
-void BufferState()
-{
-	printf("Состояние буфера: %s", GREEN);
-	for (int i = 0; i < N; i++)
-		printf("%c ", buffer[i]);
-	puts("");
-}
-
-void InitBuffer()
-{
-	for (int i = 0; i < N; i++)
-		buffer[i] = INIT_VALUE;
-}
 \end{lstlisting}
 
 \begin{lstlisting}[label=some-code,caption=Файл\, для работы с задержками]
-Delay *CreateRandomDelays(int const count)
+Delay *CreateRandomDelays(int const count, const int delay_time)
 {
 	Delay *delay = malloc(sizeof(Delay));
 
@@ -127,7 +141,7 @@ Delay *CreateRandomDelays(int const count)
 	return delay;
 }
 
-void UpdateDelays(Delay *delay)
+void UpdateDelays(Delay *delay, const int delay_time)
 {
 	for (int i = 0; i < delay->count; i++)
 		delay->delays[i] = rand() % DELAY_TIME;
@@ -246,11 +260,10 @@ void ProducerRunning(const int semId, const int producerId, Delay *delays)
 	}
 
 	// Положить в буфер.
-	printf("%sПроизводитель %d в критической зоне. Положил в буфер. \n", YELLOW, producerId);
+	printf("%sПроизводитель %d в критической зоне. Положил в буфер: %c\n", YELLOW, producerId, ALPHABET[*producer_pos]);
 
 	buffer[*producer_pos] = ALPHABET[*producer_pos];
 	*producer_pos = *producer_pos + 1;
-	BufferState();
 
 	rv = semop(semId, ProducerEnd, 2);
 	if (rv == ERROR_SEMOP)
@@ -317,7 +330,10 @@ void CreateProducer(const int producerId, const int semId, Delay *delays)
 
 #define SEM_COUNT 3
 
-#define DELAY_TIME 3 // Для задержек.
+// Для задержек.
+#define CONSUMER_DELAY_TIME 1
+#define PRODUCER_DELAY_TIME 3
+#define DELAY_TIME 3
 
 #define COUNT 3
 #define COUNT_PRODUCER 3
@@ -336,12 +352,6 @@ void CreateProducer(const int producerId, const int semId, Delay *delays)
 
 #endif
 \end{lstlisting}
-
-\begin{figure}[ht!]
-	\centering{
-		\includegraphics[width=1\textwidth]{img/res1.jpg}
-		\caption{Результат работы программы 1.} }
-\end{figure}
 
 \section{Задание 2}
 

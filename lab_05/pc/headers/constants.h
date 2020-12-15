@@ -12,7 +12,7 @@
 
 // Colors.
 #define GREEN "\33[32m"
-#define YELLOW "\33[33m"
+#define YELLOW "\33[32m"
 #define BLUE "\33[34m"
 #define RED "\33[31m"
 
@@ -35,7 +35,9 @@
 
 #define SEM_COUNT 3
 
-#define DELAY_TIME 3 // Для задержек.
+// Для задержек.
+#define CONSUMER_DELAY_TIME 2 // Потребитель.
+#define PRODUCER_DELAY_TIME 2 // Производитель.
 
 #define COUNT 3
 #define COUNT_PRODUCER 3

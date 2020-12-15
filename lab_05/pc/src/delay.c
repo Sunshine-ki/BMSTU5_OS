@@ -4,22 +4,22 @@
 #include "constants.h"
 #include "delay.h"
 
-Delay *CreateRandomDelays(int const count)
+Delay *CreateRandomDelays(int const count, const int delay_time)
 {
 	Delay *delay = malloc(sizeof(Delay));
 
 	delay->delays = malloc(sizeof(int) * count);
 	delay->count = count - 1;
 
-	UpdateDelays(delay);
+	UpdateDelays(delay, delay_time);
 
 	return delay;
 }
 
-void UpdateDelays(Delay *delay)
+void UpdateDelays(Delay *delay, const int delay_time)
 {
 	for (int i = 0; i < delay->count; i++)
-		delay->delays[i] = rand() % DELAY_TIME;
+		delay->delays[i] = rand() % delay_time;
 }
 
 int getDelay(Delay *delay)

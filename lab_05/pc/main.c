@@ -36,8 +36,8 @@ int main(void)
 	int *address = NULL;
 
 	// Создаем задержки.
-	Delay *delaysProducer = CreateRandomDelays(NUMBER_OF_WORKS);
-	Delay *delaysConsumer = CreateRandomDelays(NUMBER_OF_WORKS);
+	Delay *delaysProducer = CreateRandomDelays(NUMBER_OF_WORKS, PRODUCER_DELAY_TIME);
+	Delay *delaysConsumer = CreateRandomDelays(NUMBER_OF_WORKS, CONSUMER_DELAY_TIME);
 
 	// IPC_PRIVATE - ключ, который показывает, что
 	// Набор семафоров могут использовать только процессы,
@@ -95,8 +95,8 @@ int main(void)
 		CreateConsumer(i + 1, semDescr, delaysConsumer);
 
 		// Обновляем задержки.
-		UpdateDelays(delaysProducer);
-		UpdateDelays(delaysConsumer);
+		UpdateDelays(delaysProducer, PRODUCER_DELAY_TIME);
+		UpdateDelays(delaysConsumer, CONSUMER_DELAY_TIME);
 	}
 
 	for (int i = 0; i < COUNT_PRODUCER + COUNT_CONSUMER; i++)

@@ -337,6 +337,15 @@ INPUT /var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map
 OUTPUT /home/lis/university/github/oc/lab_05/report/01-report.aux
 INPUT /home/lis/university/github/oc/lab_05/report/01-report.tex
 INPUT /home/lis/university/github/oc/lab_05/report/01-report.tex
+INPUT /home/lis/university/github/oc/lab_05/report/img/res1_0.png
+INPUT /home/lis/university/github/oc/lab_05/report/img/res1_0.png
+INPUT /home/lis/university/github/oc/lab_05/report/img/res1_0.png
+INPUT /home/lis/university/github/oc/lab_05/report/img/res1_1.png
+INPUT /home/lis/university/github/oc/lab_05/report/img/res1_1.png
+INPUT /home/lis/university/github/oc/lab_05/report/img/res1_1.png
+INPUT /home/lis/university/github/oc/lab_05/report/img/res1_2.png
+INPUT /home/lis/university/github/oc/lab_05/report/img/res1_2.png
+INPUT /home/lis/university/github/oc/lab_05/report/img/res1_2.png
 INPUT /usr/share/texlive/texmf-dist/tex/latex/cyrillic/koi8-r.def
 INPUT /usr/share/texlive/texmf-dist/tex/latex/cyrillic/koi8-r.def
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm
@@ -357,11 +366,6 @@ INPUT /usr/share/texlive/texmf-dist/tex/latex/cyrillic/koi8-r.def
 INPUT /usr/share/texlive/texmf-dist/tex/latex/cyrillic/koi8-r.def
 INPUT /usr/share/texlive/texmf-dist/tex/latex/cyrillic/koi8-r.def
 INPUT /usr/share/texlive/texmf-dist/tex/latex/cyrillic/koi8-r.def
-INPUT /usr/share/texlive/texmf-dist/tex/latex/cyrillic/koi8-r.def
-INPUT /usr/share/texlive/texmf-dist/tex/latex/cyrillic/koi8-r.def
-INPUT /home/lis/university/github/oc/lab_05/report/img/res1.jpg
-INPUT /home/lis/university/github/oc/lab_05/report/img/res1.jpg
-INPUT /home/lis/university/github/oc/lab_05/report/img/res1.jpg
 INPUT /usr/share/texlive/texmf-dist/tex/latex/cyrillic/koi8-r.def
 INPUT /usr/share/texlive/texmf-dist/tex/latex/cyrillic/koi8-r.def
 INPUT /usr/share/texlive/texmf-dist/tex/latex/cyrillic/koi8-r.def
