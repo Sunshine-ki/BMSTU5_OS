@@ -27,7 +27,7 @@ const int shm_size = 2 * sizeof(int) + N * sizeof(char);
 
 int main(void)
 {
-	// Чтобы при повторном запуске новые рандомные сила были.
+	// Чтобы при повторном запуске новые рандомные числа были.
 	srand(time(NULL));
 
 	int semDescr;
@@ -107,8 +107,23 @@ int main(void)
 	DestroyDelay(delaysProducer);
 	DestroyDelay(delaysConsumer);
 
+	if (shmctl(shmid, IPC_RMID, NULL))
+	{
+		perror("Ошибка.");
+		return ERROR;
+	}
+
 	if (shmdt(address) == -1)
+	{
 		perror("Ошибка при попытке отключить разделяемый сегмент от адресного пространства процесса.");
+		return ERROR;
+	}
+
+	if (semctl(semDescr, 0, IPC_RMID) == -1)
+	{
+		perror("Ошибка при попытке удаления семафора.");
+		return ERROR;
+	}
 
 	return OK;
 }
