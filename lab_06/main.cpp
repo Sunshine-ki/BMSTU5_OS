@@ -22,8 +22,8 @@
 
 #define ITERATIONS_NUMBER 10
 
-HANDLE canRead;	 // event.
-HANDLE canWrite; // event.
+HANDLE canRead;
+HANDLE canWrite;
 HANDLE mutex;
 
 LONG waitingWritersCount = 0;
@@ -37,35 +37,113 @@ HANDLE writerThreads[WRITERS_NUMBER];
 int readersID[READERS_NUMBER];
 int writersID[WRITERS_NUMBER];
 
-// int readersRand[READERS_NUMBER * ITERATIONS_NUMBER];
+int readersRand[READERS_NUMBER * ITERATIONS_NUMBER];
+int writersRand[READERS_NUMBER * ITERATIONS_NUMBER];
 
 int value = 0;
 
+bool turn(HANDLE event)
+{
+	// Если функция возвращает WAIT_OBJECT_0, объект свободен.
+	return WaitForSingleObject(event, 0) == WAIT_OBJECT_0;
+}
+
 void StartRead()
 {
+	// Увеличиваем кол-во ждущих читателей.
+	InterlockedIncrement(&waitingReadersCount);
+
+	// Процесс читатель сможет начать работать,
+	// Если есть нет активного писателя,
+	// И нет писателей, ждущих свою очередь.
+	if (writing || turn(canWrite))
+		WaitForSingleObject(canRead, INFINITE);
+
+	WaitForSingleObject(mutex, INFINITE);
+	// Уменьшаем кол-во ждущих читателей.
+	InterlockedDecrement(&waitingReadersCount);
+	// Увеличиваем кол-во активных читателей.
+	InterlockedIncrement(&activeReadersCount);
+	// Выдаем сигнал canRead,
+	// Чтобы следующий читатель в очереди
+	// Читателей смог начать чтение
+	SetEvent(canRead);
+	ReleaseMutex(mutex);
 }
 
 void StopRead()
 {
+	// Уменьшаем количество активных читателей.
+	InterlockedDecrement(&activeReadersCount);
+	// Если число читателей равно нулю,
+	// Выполняется signal(can_write),
+	// активизирующий писателя из очереди писателей.
+	if (!activeReadersCount)
+	{
+		ResetEvent(canRead);
+		SetEvent(canWrite);
+	}
 }
 
 DWORD WINAPI Reader(CONST LPVOID param)
 {
 	int id = *(int *)param;
+	int sleepTime;
 	for (int i = 0; i < ITERATIONS_NUMBER; i++)
 	{
-		// StartRead();
-		// printf("Reader with id = %d, i = %d value = %d\n", id, i, value);
-		// StopRead();
+		sleepTime = readersRand[i * id];
+		StartRead();
+		printf("Reader with id = %d, i = %d value = %d sleep time = %d\n", id, i, value, sleepTime);
+		StopRead();
 
-		WaitForSingleObject(canRead, INFINITE);
-		printf("Thread with id = %d, i = %d value = %d\n", id, i, value);
-		Sleep(20);
+		// WaitForSingleObject(canRead, INFINITE);
+		// printf("Thread with id = %d, i = %d value = %d\n", id, i, value);
+		Sleep(sleepTime);
 	}
+}
+
+void StartWrite()
+{
+	// Увеличиваем кол-во ждущих писателей.
+	InterlockedIncrement(&waitingWritersCount);
+
+	// Процесс писатель сможет начать работать,
+	// Если нет читающих процессов
+	// И нет другого активного писателя.
+	if (activeReadersCount > 0 || writing)
+		WaitForSingleObject(canWrite, INFINITE);
+
+	// Уменьшаем кол-во ждущих писателей.
+	InterlockedDecrement(&waitingWritersCount);
+	// Писатель пишет.
+	writing = true;
+}
+
+void StopWrite()
+{
+	writing = false;
+	// Предпочтение отдается читателям при условии,
+	// Что очередь ждущих читателей не пуста.
+	if (waitingReadersCount)
+		SetEvent(canRead);
+	else
+		SetEvent(canWrite);
 }
 
 DWORD WINAPI Writer(CONST LPVOID param)
 {
+	int id = *(int *)param;
+	int sleepTime;
+	for (int i = 0; i < ITERATIONS_NUMBER; i++)
+	{
+		sleepTime = readersRand[i * id];
+
+		StartWrite();
+		printf("Writer with id = %d, i = %d value = %d sleep time = %d\n", id, i, value++, sleepTime);
+		StopWrite();
+
+		Sleep(sleepTime);
+	}
 }
 
 int InitHandles()
@@ -77,15 +155,15 @@ int InitHandles()
 		return CREATE_MUTEX_ERROR;
 	}
 
-	// 2ой аргумент == true значит сброс вручную
-	// 3ий аргумент == true значит объект в сигнальном состоянии.
-	if ((canRead = CreateEvent(NULL, TRUE, TRUE, NULL)) == NULL)
+	// 2ой аргумент == FALSE значит автоматический сброс.
+	// 3ий аргумент == FALSE значит, что объект не в сигнальном состоянии.
+	if ((canRead = CreateEvent(NULL, FALSE, FALSE, NULL)) == NULL)
 	{
 		perror("CreateEvent (canRead)");
 		return CREATE_EVENT_ERROR;
 	}
 
-	if ((canWrite = CreateEvent(NULL, TRUE, TRUE, NULL)) == NULL)
+	if ((canWrite = CreateEvent(NULL, FALSE, FALSE, NULL)) == NULL)
 	{
 		perror("CreateEvent (canWrite)");
 		return CREATE_EVENT_ERROR;
@@ -143,27 +221,24 @@ void Close()
 	CloseHandle(mutex);
 }
 
-// void CreateRand()
-// {
-// 	for (int i = 0; i < READERS_NUMBER * ITERATIONS_NUMBER; i++)
-// 		readersRand[i] = rand() % 100 + 50;
-// }
+void CreateRand()
+{
+	for (int i = 0; i < READERS_NUMBER * ITERATIONS_NUMBER; i++)
+		readersRand[i] = rand() % 100 + 50;
+
+	for (int i = 0; i < WRITERS_NUMBER * ITERATIONS_NUMBER; i++)
+		writersRand[i] = rand() % 100 + 50;
+}
 
 int main(void)
 {
 	setbuf(stdout, NULL);
-	// srand(time(NULL));
+	srand(time(NULL));
 
-	int err;
-
-	printf("\n\n\n\n\n\n\n\n");
-
-	// CreateRand();
-
-	err = InitHandles();
+	CreateRand();
+	int err = InitHandles();
 	if (err)
 		return err;
-
 	err = CreateThreads();
 	if (err)
 		return err;
@@ -175,10 +250,7 @@ int main(void)
 	WaitForMultipleObjects(READERS_NUMBER, readerThreads, TRUE, INFINITE);
 	WaitForMultipleObjects(WRITERS_NUMBER, writerThreads, TRUE, INFINITE);
 
-	printf("\n\n\n\n\n\n\n\n");
-
 	Close();
-
 	printf("Ok!\n");
 	return OK;
 }
