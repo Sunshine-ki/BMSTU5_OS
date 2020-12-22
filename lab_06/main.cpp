@@ -17,10 +17,15 @@
 #define CREATE_READER_THREAD_ERROR 3
 #define CREATE_WRITER_THREAD_ERROR 3
 
+#define MINIMUM_READER_DELAY 100
+#define MINIMUM_WRITER_DELAY 100
+#define MAXIMUM_READER_DELAY 200
+#define MAXIMUM_WRITER_DELAY 200
+
 #define READERS_NUMBER 3
 #define WRITERS_NUMBER 3
 
-#define ITERATIONS_NUMBER 10
+#define ITERATIONS_NUMBER 5
 
 HANDLE canRead;
 HANDLE canWrite;
@@ -79,21 +84,19 @@ void StopRead()
 	// Выполняется signal(can_write),
 	// активизирующий писателя из очереди писателей.
 	if (!activeReadersCount)
-	{
-		ResetEvent(canRead);
 		SetEvent(canWrite);
-	}
 }
 
 DWORD WINAPI Reader(CONST LPVOID param)
 {
 	int id = *(int *)param;
 	int sleepTime;
+	int begin = id * ITERATIONS_NUMBER;
 	for (int i = 0; i < ITERATIONS_NUMBER; i++)
 	{
-		sleepTime = readersRand[i * id];
+		sleepTime = readersRand[begin + i];
 		StartRead();
-		printf("Reader with id = %d, i = %d value = %d sleep time = %d\n", id, i, value, sleepTime);
+		printf("Reader with id = %d; value = %d; sleep time = %d.\n", id, value, sleepTime);
 		StopRead();
 
 		// WaitForSingleObject(canRead, INFINITE);
@@ -134,12 +137,14 @@ DWORD WINAPI Writer(CONST LPVOID param)
 {
 	int id = *(int *)param;
 	int sleepTime;
+	int begin = id * ITERATIONS_NUMBER;
 	for (int i = 0; i < ITERATIONS_NUMBER; i++)
 	{
-		sleepTime = readersRand[i * id];
+		sleepTime = writersRand[begin + i];
 
 		StartWrite();
-		printf("Writer with id = %d, i = %d value = %d sleep time = %d\n", id, i, value++, sleepTime);
+		++value;
+		printf("Writer with id = %d; value = %d; sleep time = %d.\n", id, value, sleepTime);
 		StopWrite();
 
 		Sleep(sleepTime);
@@ -190,7 +195,7 @@ int CreateThreads()
 			perror("CreateThread (reader)");
 			return CREATE_READER_THREAD_ERROR;
 		}
-		printf("Created reader with thread id = %d\n", id);
+		// printf("Created reader with thread id = %d\n", id);
 	}
 
 	for (int i = 0; i < WRITERS_NUMBER; i++)
@@ -201,7 +206,7 @@ int CreateThreads()
 			perror("CreateThread (writer)");
 			return CREATE_WRITER_THREAD_ERROR;
 		}
-		printf("Created writer with thread id = %d\n", id);
+		// printf("Created writer with thread id = %d\n", id);
 	}
 
 	return OK;
@@ -224,10 +229,10 @@ void Close()
 void CreateRand()
 {
 	for (int i = 0; i < READERS_NUMBER * ITERATIONS_NUMBER; i++)
-		readersRand[i] = rand() % 100 + 50;
+		readersRand[i] = rand() % (MAXIMUM_READER_DELAY - MINIMUM_READER_DELAY) + MINIMUM_READER_DELAY;
 
 	for (int i = 0; i < WRITERS_NUMBER * ITERATIONS_NUMBER; i++)
-		writersRand[i] = rand() % 100 + 50;
+		writersRand[i] = rand() % (MAXIMUM_WRITER_DELAY - MINIMUM_WRITER_DELAY) + MINIMUM_WRITER_DELAY;
 }
 
 int main(void)
@@ -236,9 +241,11 @@ int main(void)
 	srand(time(NULL));
 
 	CreateRand();
+
 	int err = InitHandles();
 	if (err)
 		return err;
+
 	err = CreateThreads();
 	if (err)
 		return err;
@@ -251,6 +258,7 @@ int main(void)
 	WaitForMultipleObjects(WRITERS_NUMBER, writerThreads, TRUE, INFINITE);
 
 	Close();
-	printf("Ok!\n");
+
+	printf("\nOk!\n");
 	return OK;
 }
