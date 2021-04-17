@@ -1,1 +1,8 @@
 *.tex linguist-documentation
+*/report/* linguist-documentation
+
+lab_01/part_1/report/* linguist-documentation
+lab_01/part_2/report/* linguist-documentation
+lab_04/report/* linguist-documentation
+lab_05/report/* linguist-documentation
+lab_06/report/* linguist-documentation
